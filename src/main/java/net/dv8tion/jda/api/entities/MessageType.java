@@ -245,6 +245,13 @@ public enum MessageType
     POLL_RESULT(46, true, true),
 
     /**
+     * Sent to the {@link Guild#getSystemChannel() system channel} when an emoji is added to the guild.
+     *
+     * <p>The content of the message will be the custom emoji, such as {@code <:no:754090061204553820>}
+     */
+    EMOJI_ADDED(63, true, true),
+
+    /**
      * Unknown MessageType.
      */
     UNKNOWN(-1, false, true);
