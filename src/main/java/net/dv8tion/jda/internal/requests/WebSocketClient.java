@@ -58,12 +58,17 @@ import org.slf4j.Logger;
 import org.slf4j.MDC;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.*;
@@ -966,6 +971,12 @@ public class WebSocketClient extends WebSocketAdapter implements WebSocketListen
         }
     }
 
+    private static boolean dumpData = Boolean.getBoolean("net.dv8tion.dump.ws.data");
+    private static boolean measureDecompression = Boolean.getBoolean("net.dv8tion.measure.decompression");
+
+    // Because zlib can be in multiple steps? haven't seen it in practise though
+    private long timeToDecompress = 0;
+
     protected DataObject handleBinary(byte[] binary) throws DecompressionException {
         if (decompressor.getType() == Compression.NONE) {
             if (encoding == GatewayEncoding.ETF) {
@@ -976,7 +987,31 @@ public class WebSocketClient extends WebSocketAdapter implements WebSocketListen
         // Scoping allows us to print the json that possibly failed parsing
         byte[] data;
         try {
-            data = decompressor.decompress(binary);
+            if (dumpData) {
+                try {
+                    dumpData(binary);
+                } catch (Exception e) {
+                    dumpData = false;
+                    LOG.error("Error saving data chunk", e);
+                }
+            }
+            if (measureDecompression) {
+                long start = System.nanoTime();
+                data = decompressor.decompress(binary);
+                long end = System.nanoTime();
+                timeToDecompress += (end - start);
+                if (data != null) {
+                    try {
+                        logDecompression(timeToDecompress, binary, data);
+                    } catch (Exception e) {
+                        measureDecompression = false;
+                        LOG.error("Error logging decompression", e);
+                    }
+                    timeToDecompress = 0;
+                }
+            } else {
+                data = decompressor.decompress(binary);
+            }
             if (data == null) {
                 return null;
             }
@@ -1001,6 +1036,43 @@ public class WebSocketClient extends WebSocketAdapter implements WebSocketListen
             LOG.error("Failed to parse json: {}", jsonString);
             throw e;
         }
+    }
+
+    private Path gwMessageDir;
+    private int i = 0;
+
+    private void dumpData(byte[] compressed) throws IOException {
+        if (gwMessageDir == null) {
+            String baseFolderName = "gateway-chunks-" + decompressor.getType().name().toLowerCase();
+            String folderName = String.format("shard-%d", api.getShardInfo().getShardId());
+            gwMessageDir = Files.createDirectories(Paths.get(baseFolderName, folderName));
+        }
+        int chunkIndex = i++;
+        Path compressedChunkPath = gwMessageDir.resolve(String.format("chunk-%s.bin.zlib", chunkIndex));
+
+        Files.write(compressedChunkPath, compressed, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+    }
+
+    private DataOutputStream decompressionLogOutput;
+
+    private void logDecompression(long timeToDecompress, byte[] compressed, byte[] decompressed) throws IOException {
+        if (decompressionLogOutput == null) {
+            String baseFolderName = "decompression-logs";
+            String folderName = String.format(
+                    "shard-%d-%s",
+                    api.getShardInfo().getShardId(),
+                    decompressor.getType().name().toLowerCase());
+            String fileName = String.format("log-%d.bin", System.currentTimeMillis());
+            Path path = Paths.get(baseFolderName, folderName, fileName);
+            Files.createDirectories(path.getParent());
+            decompressionLogOutput = new DataOutputStream(
+                    Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.APPEND));
+        }
+
+        decompressionLogOutput.writeLong(timeToDecompress);
+        decompressionLogOutput.writeInt(compressed.length);
+        decompressionLogOutput.writeInt(decompressed.length);
+        decompressionLogOutput.writeChar(';');
     }
 
     @Override
