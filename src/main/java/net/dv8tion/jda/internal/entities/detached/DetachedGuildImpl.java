@@ -30,6 +30,7 @@ import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import net.dv8tion.jda.api.entities.guild.SecurityIncidentActions;
 import net.dv8tion.jda.api.entities.guild.SecurityIncidentDetections;
 import net.dv8tion.jda.api.entities.guild.SystemChannelFlag;
+import net.dv8tion.jda.api.entities.messages.MessageSearchRequest;
 import net.dv8tion.jda.api.entities.sticker.GuildSticker;
 import net.dv8tion.jda.api.entities.sticker.StickerSnowflake;
 import net.dv8tion.jda.api.entities.templates.Template;
@@ -55,6 +56,7 @@ import net.dv8tion.jda.internal.entities.detached.mixin.IDetachableEntityMixin;
 import net.dv8tion.jda.internal.requests.restaction.pagination.BanPaginationActionImpl;
 import net.dv8tion.jda.internal.utils.EntityString;
 import net.dv8tion.jda.internal.utils.cache.SortedChannelCacheViewImpl;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -322,6 +324,12 @@ public class DetachedGuildImpl implements Guild, IDetachableEntityMixin {
     @Override
     public ScheduledEventAction createScheduledEvent(
             @Nonnull String name, @Nonnull GuildChannel channel, @Nonnull OffsetDateTime startTime) {
+        throw detachedException();
+    }
+
+    @NotNull
+    @Override
+    public MessageSearchRequest searchMessages() {
         throw detachedException();
     }
 

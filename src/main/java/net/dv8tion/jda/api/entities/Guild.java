@@ -40,6 +40,7 @@ import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import net.dv8tion.jda.api.entities.guild.SecurityIncidentActions;
 import net.dv8tion.jda.api.entities.guild.SecurityIncidentDetections;
 import net.dv8tion.jda.api.entities.guild.SystemChannelFlag;
+import net.dv8tion.jda.api.entities.messages.MessageSearchRequest;
 import net.dv8tion.jda.api.entities.sticker.*;
 import net.dv8tion.jda.api.entities.templates.Template;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
@@ -5572,6 +5573,12 @@ public interface Guild extends IGuildChannelContainer<GuildChannel>, ISnowflake,
     @CheckReturnValue
     ScheduledEventAction createScheduledEvent(
             @Nonnull String name, @Nonnull GuildChannel channel, @Nonnull OffsetDateTime startTime);
+
+    // TODO can throw MISSING_ACCESS if channel is inaccessible
+    // TODO document detached exception
+    @Nonnull
+    @CheckReturnValue
+    MessageSearchRequest searchMessages();
 
     /**
      * Modifies the positional order of {@link net.dv8tion.jda.api.entities.Guild#getCategories() Guild.getCategories()}

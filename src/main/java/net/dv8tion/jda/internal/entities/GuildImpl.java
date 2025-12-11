@@ -39,6 +39,7 @@ import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import net.dv8tion.jda.api.entities.guild.SecurityIncidentActions;
 import net.dv8tion.jda.api.entities.guild.SecurityIncidentDetections;
 import net.dv8tion.jda.api.entities.guild.SystemChannelFlag;
+import net.dv8tion.jda.api.entities.messages.MessageSearchRequest;
 import net.dv8tion.jda.api.entities.sticker.GuildSticker;
 import net.dv8tion.jda.api.entities.sticker.StandardSticker;
 import net.dv8tion.jda.api.entities.sticker.StickerSnowflake;
@@ -68,6 +69,7 @@ import net.dv8tion.jda.api.utils.data.DataObject;
 import net.dv8tion.jda.internal.JDAImpl;
 import net.dv8tion.jda.internal.entities.automod.AutoModRuleImpl;
 import net.dv8tion.jda.internal.entities.channel.mixin.middleman.GuildChannelMixin;
+import net.dv8tion.jda.internal.entities.messages.MessageSearchRequestImpl;
 import net.dv8tion.jda.internal.handle.EventCache;
 import net.dv8tion.jda.internal.interactions.CommandDataImpl;
 import net.dv8tion.jda.internal.interactions.command.CommandImpl;
@@ -625,6 +627,12 @@ public class GuildImpl implements Guild {
             @Nonnull String name, @Nonnull GuildChannel channel, @Nonnull OffsetDateTime startTime) {
         checkPermission(Permission.MANAGE_EVENTS);
         return new ScheduledEventActionImpl(name, channel, startTime, this);
+    }
+
+    @Nonnull
+    @Override
+    public MessageSearchRequest searchMessages() {
+        return new MessageSearchRequestImpl(this);
     }
 
     @Override
