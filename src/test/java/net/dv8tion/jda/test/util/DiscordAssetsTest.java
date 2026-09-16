@@ -72,6 +72,10 @@ public class DiscordAssetsTest extends AbstractSnapshotTest {
                 "animatedNameplate",
                 animatedNameplate(EXAMPLE_FORMAT, EXAMPLE_NAMEPLATE_ASSET).getUrl());
         data.put(
+                "memberBanner",
+                memberBanner(EXAMPLE_FORMAT, EXAMPLE_SNOWFLAKE, EXAMPLE_SNOWFLAKE, EXAMPLE_HASH)
+                        .getUrl());
+        data.put(
                 "roleIcon",
                 roleIcon(EXAMPLE_FORMAT, EXAMPLE_SNOWFLAKE, EXAMPLE_HASH).getUrl());
         data.put(

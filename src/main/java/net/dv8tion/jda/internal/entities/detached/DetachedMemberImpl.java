@@ -49,6 +49,7 @@ public class DetachedMemberImpl implements Member, MemberMixin<DetachedMemberImp
     private User user;
     private String nickname;
     private String avatarId;
+    private String bannerId;
     private Collectibles collectibles;
     private long joinDate, boostDate, timeOutEnd;
     private boolean pending = false;
@@ -162,6 +163,11 @@ public class DetachedMemberImpl implements Member, MemberMixin<DetachedMemberImp
     @Override
     public String getAvatarId() {
         return avatarId;
+    }
+
+    @Override
+    public String getBannerId() {
+        return bannerId;
     }
 
     @Nonnull
@@ -324,6 +330,12 @@ public class DetachedMemberImpl implements Member, MemberMixin<DetachedMemberImp
     @Override
     public DetachedMemberImpl setAvatarId(String avatarId) {
         this.avatarId = avatarId;
+        return this;
+    }
+
+    @Override
+    public DetachedMemberImpl setBannerId(String bannerId) {
+        this.bannerId = bannerId;
         return this;
     }
 

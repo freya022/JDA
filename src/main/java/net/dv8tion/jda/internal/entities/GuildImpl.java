@@ -628,6 +628,13 @@ public class GuildImpl implements Guild {
         return new ScheduledEventActionImpl(name, channel, startTime, this);
     }
 
+    @Nonnull
+    @Override
+    public MessageSearchAction searchMessages() {
+        checkPermission(Permission.MESSAGE_HISTORY);
+        return new MessageSearchActionImpl(this);
+    }
+
     @Override
     public TextChannel getCommunityUpdatesChannel() {
         return communityUpdatesChannel;
@@ -1024,9 +1031,7 @@ public class GuildImpl implements Guild {
     @Nonnull
     @Override
     public RestAction<Integer> retrievePrunableMemberCount(int days) {
-        if (!getSelfMember().hasPermission(Permission.KICK_MEMBERS)) {
-            throw new InsufficientPermissionException(this, Permission.KICK_MEMBERS);
-        }
+        checkPrunePermissions();
 
         Checks.check(days >= 1 && days <= 30, "Provided %d days must be between 1 and 30.", days);
 
@@ -1504,7 +1509,7 @@ public class GuildImpl implements Guild {
     @Nonnull
     @Override
     public AuditableRestAction<Integer> prune(int days, boolean wait, @Nonnull Role... roles) {
-        checkPermission(Permission.KICK_MEMBERS);
+        checkPrunePermissions();
 
         Checks.check(days >= 1 && days <= 30, "Provided %d days must be between 1 and 30.", days);
         Checks.notNull(roles, "Roles");
@@ -1524,6 +1529,15 @@ public class GuildImpl implements Guild {
         }
         return new AuditableRestActionImpl<>(getJDA(), route, body, (response, request) -> response.getObject()
                 .getInt("pruned", 0));
+    }
+
+    private void checkPrunePermissions() {
+        if (features.contains("PRUNE_REQUIRES_ADMIN")) {
+            checkPermission(Permission.ADMINISTRATOR);
+        } else {
+            checkPermission(Permission.MANAGE_SERVER);
+            checkPermission(Permission.KICK_MEMBERS);
+        }
     }
 
     @Nonnull
