@@ -246,7 +246,10 @@ public class WebSocketClient extends WebSocketAdapter implements WebSocketListen
 
         // Allows 115 messages to be sent before limiting.
         if (this.messagesSent.get() <= 115 || (skipQueue && this.messagesSent.get() <= 119)) {
-            LOG.trace("<- {}", message);
+            if (LOG.isTraceEnabled()) {
+                String redactedMessage = message.toString().replace(getToken(), "<REDACTED>");
+                LOG.trace("<- {}", redactedMessage);
+            }
             if (encoding == GatewayEncoding.ETF) {
                 socket.sendBinary(message.toETF());
             } else {
@@ -348,7 +351,11 @@ public class WebSocketClient extends WebSocketAdapter implements WebSocketListen
         try {
             String gatewayUrl = resumeUrl != null ? resumeUrl : api.getGatewayUrl();
             gatewayUrl = IOUtil.addQuery(
-                    gatewayUrl, "encoding", encoding.name().toLowerCase(), "v", JDAInfo.DISCORD_GATEWAY_VERSION);
+                    gatewayUrl,
+                    "encoding",
+                    encoding.name().toLowerCase(Locale.ROOT),
+                    "v",
+                    JDAInfo.DISCORD_GATEWAY_VERSION);
             String compressionQueryParameter = messageReader.getCompressionQueryParameter();
             if (compressionQueryParameter != null) {
                 gatewayUrl = IOUtil.addQuery(gatewayUrl, "compress", compressionQueryParameter);
@@ -413,20 +420,16 @@ public class WebSocketClient extends WebSocketAdapter implements WebSocketListen
         connected = false;
         // Use a new thread to avoid issues with sleep interruption
         if (Thread.currentThread().isInterrupted()) {
-            Thread thread =
-                    new Thread(() -> handleDisconnect(websocket, serverCloseFrame, clientCloseFrame, closedByServer));
+            Thread thread = new Thread(() -> handleDisconnect(serverCloseFrame, clientCloseFrame, closedByServer));
             thread.setName(api.getIdentifierString() + " MainWS-ReconnectThread");
             thread.start();
         } else {
-            handleDisconnect(websocket, serverCloseFrame, clientCloseFrame, closedByServer);
+            handleDisconnect(serverCloseFrame, clientCloseFrame, closedByServer);
         }
     }
 
     private void handleDisconnect(
-            WebSocket websocket,
-            WebSocketFrame serverCloseFrame,
-            WebSocketFrame clientCloseFrame,
-            boolean closedByServer) {
+            WebSocketFrame serverCloseFrame, WebSocketFrame clientCloseFrame, boolean closedByServer) {
         api.setStatus(JDA.Status.DISCONNECTED);
         CloseCode closeCode = null;
         int rawCloseCode = 1005;
@@ -771,7 +774,7 @@ public class WebSocketClient extends WebSocketAdapter implements WebSocketListen
 
     protected List<DataObject> convertPresencesReplace(long responseTotal, DataArray array) {
         // Needs special handling due to content of "d" being an array
-        List<DataObject> output = new LinkedList<>();
+        List<DataObject> output = new ArrayList<>();
         for (int i = 0; i < array.length(); i++) {
             DataObject presence = array.getObject(i);
             DataObject obj = DataObject.empty();
@@ -1096,6 +1099,7 @@ public class WebSocketClient extends WebSocketAdapter implements WebSocketListen
                 () -> updateAudioConnection0(guildId, connectedChannel));
     }
 
+    @SuppressWarnings("fallthrough")
     public ConnectionRequest updateAudioConnection0(long guildId, AudioChannel connectedChannel) {
         // Called by VoiceStateUpdateHandler when we receive a response from discord
         // about our request to CONNECT or DISCONNECT.
@@ -1237,6 +1241,14 @@ public class WebSocketClient extends WebSocketAdapter implements WebSocketListen
         handlers.put("GUILD_ROLE_UPDATE", new GuildRoleUpdateHandler(api));
         handlers.put("GUILD_SYNC", new GuildSyncHandler(api));
         handlers.put("GUILD_STICKERS_UPDATE", new GuildStickersUpdateHandler(api));
+        handlers.put("GUILD_SOUNDBOARD_SOUND_CREATE", new GuildSoundboardSoundCreateHandler(api));
+        GuildSoundboardSoundUpdateHandler soundboardSoundUpdateHandler = new GuildSoundboardSoundUpdateHandler(api);
+        handlers.put("GUILD_SOUNDBOARD_SOUND_UPDATE", soundboardSoundUpdateHandler);
+        handlers.put(
+                "GUILD_SOUNDBOARD_SOUNDS_UPDATE",
+                new GuildSoundboardSoundsUpdateHandler(api, soundboardSoundUpdateHandler));
+        handlers.put("GUILD_SOUNDBOARD_SOUND_DELETE", new GuildSoundboardSoundDeleteHandler(api));
+        handlers.put("VOICE_CHANNEL_EFFECT_SEND", new VoiceChannelEffectSendHandler(api));
         handlers.put("GUILD_UPDATE", new GuildUpdateHandler(api));
         handlers.put("INTERACTION_CREATE", new InteractionCreateHandler(api));
         handlers.put("INVITE_CREATE", new InviteCreateHandler(api));

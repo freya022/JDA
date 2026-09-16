@@ -19,6 +19,7 @@ package net.dv8tion.jda.internal.entities;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.ScheduledEvent;
+import net.dv8tion.jda.api.entities.SelfMember;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.unions.GuildChannelUnion;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
@@ -26,6 +27,7 @@ import net.dv8tion.jda.api.managers.ScheduledEventManager;
 import net.dv8tion.jda.api.requests.Route;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 import net.dv8tion.jda.api.requests.restaction.pagination.ScheduledEventMembersPaginationAction;
+import net.dv8tion.jda.api.utils.ImageFormat;
 import net.dv8tion.jda.internal.managers.ScheduledEventManagerImpl;
 import net.dv8tion.jda.internal.requests.restaction.AuditableRestActionImpl;
 import net.dv8tion.jda.internal.requests.restaction.pagination.ScheduledEventMembersPaginationActionImpl;
@@ -43,7 +45,7 @@ public class ScheduledEventImpl implements ScheduledEvent {
 
     private String name, description;
     private OffsetDateTime startTime, endTime;
-    private String image;
+    private String coverImage;
     private Status status;
     private Type type;
     private User creator;
@@ -70,8 +72,16 @@ public class ScheduledEventImpl implements ScheduledEvent {
 
     @Nullable
     @Override
+    public String getCoverImageId() {
+        return coverImage;
+    }
+
+    @Nullable
+    @Override
     public String getImageUrl() {
-        return image == null ? null : String.format(IMAGE_URL, getId(), image, image.startsWith("a_") ? "gif" : "png");
+        return coverImage == null
+                ? null
+                : getCoverImageUrl(coverImage.startsWith("a_") ? ImageFormat.ANIMATED_WEBP : ImageFormat.PNG);
     }
 
     @Nullable
@@ -155,13 +165,27 @@ public class ScheduledEventImpl implements ScheduledEvent {
     @Nonnull
     @Override
     public AuditableRestAction<Void> delete() {
-        Guild guild = getGuild();
-        if (!guild.getSelfMember().hasPermission(Permission.MANAGE_EVENTS)) {
-            throw new InsufficientPermissionException(guild, Permission.MANAGE_EVENTS);
-        }
+        checkManagePermissions();
 
         Route.CompiledRoute route = Route.Guilds.DELETE_SCHEDULED_EVENT.compile(guild.getId(), getId());
         return new AuditableRestActionImpl<>(getJDA(), route);
+    }
+
+    public void checkManagePermissions() {
+        SelfMember selfMember = guild.getSelfMember();
+        if (creatorId == selfMember.getIdLong()) {
+            if (!selfMember.hasPermission(Permission.MANAGE_EVENTS)
+                    && !selfMember.hasPermission(Permission.CREATE_SCHEDULED_EVENTS)) {
+                throw new InsufficientPermissionException(
+                        guild,
+                        Permission.MANAGE_EVENTS,
+                        "Deleting your own scheduled events requires the MANAGE_EVENTS or CREATE_SCHEDULED_EVENTS permission");
+            }
+        } else {
+            if (!selfMember.hasPermission(Permission.MANAGE_EVENTS)) {
+                throw new InsufficientPermissionException(guild, Permission.MANAGE_EVENTS);
+            }
+        }
     }
 
     @Nonnull
@@ -190,8 +214,8 @@ public class ScheduledEventImpl implements ScheduledEvent {
         return this;
     }
 
-    public ScheduledEventImpl setImage(String image) {
-        this.image = image;
+    public ScheduledEventImpl setCoverImage(String image) {
+        this.coverImage = image;
         return this;
     }
 

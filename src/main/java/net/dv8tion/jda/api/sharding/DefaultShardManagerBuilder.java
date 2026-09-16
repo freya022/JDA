@@ -17,8 +17,11 @@
 package net.dv8tion.jda.api.sharding;
 
 import com.neovisionaries.ws.client.WebSocketFactory;
+import net.dv8tion.jda.annotations.ReplaceWith;
 import net.dv8tion.jda.api.GatewayEncoding;
 import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.audio.AudioModuleConfig;
+import net.dv8tion.jda.api.audio.factory.DefaultSendFactory;
 import net.dv8tion.jda.api.audio.factory.IAudioSendFactory;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.events.Event;
@@ -111,7 +114,7 @@ public class DefaultShardManagerBuilder {
     protected OkHttpClient.Builder httpClientBuilder = null;
     protected OkHttpClient httpClient = null;
     protected WebSocketFactory wsFactory = null;
-    protected IAudioSendFactory audioSendFactory = null;
+    protected AudioModuleConfig audioModuleConfig = null;
     protected ThreadFactory threadFactory = null;
     protected ChunkingFilter chunkingFilter = ChunkingFilter.ALL;
     protected MemberCachePolicy memberCachePolicy = MemberCachePolicy.ALL;
@@ -1045,10 +1048,34 @@ public class DefaultShardManagerBuilder {
      *         when creating new {@link net.dv8tion.jda.api.audio.factory.IAudioSendSystem} objects.
      *
      * @return The DefaultShardManagerBuilder instance. Useful for chaining.
+     *
+     * @deprecated Use {@link #setAudioModuleConfig(AudioModuleConfig)} instead
      */
     @Nonnull
+    @Deprecated
+    @ReplaceWith("setAudioModuleConfig(new AudioModuleConfig().withAudioSendFactory(factory))")
     public DefaultShardManagerBuilder setAudioSendFactory(@Nullable IAudioSendFactory factory) {
-        this.audioSendFactory = factory;
+        if (audioModuleConfig == null) {
+            audioModuleConfig = new AudioModuleConfig();
+        }
+        audioModuleConfig =
+                audioModuleConfig.withAudioSendFactory(factory == null ? new DefaultSendFactory() : factory);
+        return this;
+    }
+
+    /**
+     * Configures the audio module in JDA. All shards use the same module config.
+     *
+     * <p>See {@link AudioModuleConfig} for details.
+     *
+     * @param  config
+     *         The new audio module config, or {@code null} to use defaults
+     *
+     * @return The DefaultShardManagerBuilder instance. Useful for chaining.
+     */
+    @Nonnull
+    public DefaultShardManagerBuilder setAudioModuleConfig(@Nullable AudioModuleConfig config) {
+        this.audioModuleConfig = config;
         return this;
     }
 
@@ -2275,7 +2302,6 @@ public class DefaultShardManagerBuilder {
                 httpClient,
                 httpClientBuilder,
                 wsFactory,
-                audioSendFactory,
                 flags,
                 shardingFlags,
                 maxReconnectDelay,
@@ -2291,6 +2317,7 @@ public class DefaultShardManagerBuilder {
                 sessionConfig,
                 metaConfig,
                 restConfigProvider,
+                audioModuleConfig,
                 getEffectiveGatewayConfigProvider(),
                 chunkingFilter);
 
@@ -2326,8 +2353,10 @@ public class DefaultShardManagerBuilder {
         return this;
     }
 
+    @SuppressWarnings("ReferenceEquality")
     private void checkIntents() {
         boolean membersIntent = (intents & GatewayIntent.GUILD_MEMBERS.getRawValue()) != 0;
+        // Intentional comparison with reference equality to check if default is used
         if (!membersIntent && memberCachePolicy == MemberCachePolicy.ALL) {
             throw new IllegalStateException(
                     "Cannot use MemberCachePolicy.ALL without GatewayIntent.GUILD_MEMBERS enabled!");
@@ -2344,7 +2373,8 @@ public class DefaultShardManagerBuilder {
 
             // Tell user how to disable this warning
             JDAImpl.LOG.warn(
-                    "You can manually disable these flags to remove this warning by using disableCache({}) on your DefaultShardManagerBuilder",
+                    "You can manually disable these flags to remove this warning by using disableCache({}) on your"
+                            + " DefaultShardManagerBuilder",
                     automaticallyDisabled.stream().map(it -> "CacheFlag." + it).collect(Collectors.joining(", ")));
             // Only print this warning once
             automaticallyDisabled.clear();
@@ -2369,7 +2399,7 @@ public class DefaultShardManagerBuilder {
         private final boolean autoShutdown;
         private final T pool;
 
-        public ThreadPoolProviderImpl(T pool, boolean autoShutdown) {
+        private ThreadPoolProviderImpl(T pool, boolean autoShutdown) {
             this.autoShutdown = autoShutdown;
             this.pool = pool;
         }

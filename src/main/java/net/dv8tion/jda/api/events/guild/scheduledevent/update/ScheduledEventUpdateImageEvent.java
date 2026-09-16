@@ -38,7 +38,13 @@ import javax.annotation.Nonnull;
  * <p>Discord does not specifically tell us about the updates, but merely tells us the
  * {@link ScheduledEvent ScheduledEvent} was updated and gives us the updated {@link ScheduledEvent ScheduledEvent} object.
  * In order to fire a specific event like this we need to have the old {@link ScheduledEvent ScheduledEvent} cached to compare against.
+ *
+ * @deprecated Replaced by {@link ScheduledEventUpdateCoverImageEvent},
+ * note that the values previously were {@linkplain ScheduledEvent#getImageUrl() asset URLs}
+ * and now are {@linkplain ScheduledEvent#getCoverImageId() asset hashes}.
+ * <br>Additionally, they were previously marked as non-null, when they are actually both nullable.
  */
+@Deprecated
 public class ScheduledEventUpdateImageEvent extends GenericScheduledEventUpdateEvent<String> {
     public static final String IDENTIFIER = "image";
 

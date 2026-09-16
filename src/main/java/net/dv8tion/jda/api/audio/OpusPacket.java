@@ -53,7 +53,8 @@ public final class OpusPacket implements Comparable<OpusPacket> {
         this.rawPacket = packet;
         this.userId = userId;
         this.decoder = decoder;
-        this.opusAudio = packet.getEncodedAudio().array();
+        this.opusAudio = new byte[packet.getEncodedAudio().remaining()];
+        packet.getEncodedAudio().slice().get(this.opusAudio);
     }
 
     /**
@@ -215,7 +216,7 @@ public final class OpusPacket implements Comparable<OpusPacket> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getSequence(), getTimestamp(), getOpusAudio());
+        return Objects.hash(getSequence(), getTimestamp(), Arrays.hashCode(getOpusAudio()));
     }
 
     @Override

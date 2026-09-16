@@ -20,7 +20,7 @@ import com.neovisionaries.ws.client.WebSocketFactory;
 import gnu.trove.set.TLongSet;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.audio.factory.DefaultSendFactory;
+import net.dv8tion.jda.api.audio.AudioModuleConfig;
 import net.dv8tion.jda.api.audio.factory.IAudioSendFactory;
 import net.dv8tion.jda.api.audio.hooks.ConnectionStatus;
 import net.dv8tion.jda.api.entities.*;
@@ -88,6 +88,7 @@ import net.dv8tion.jda.internal.utils.config.SessionConfig;
 import net.dv8tion.jda.internal.utils.config.ThreadingConfig;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
+import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
@@ -128,12 +129,12 @@ public class JDAImpl implements JDA {
     protected final SessionConfig sessionConfig;
     protected final MetaConfig metaConfig;
     protected final RestConfig restConfig;
+    protected final AudioModuleConfig audioModuleConfig;
 
     public ShutdownReason shutdownReason =
             ShutdownReason.USER_SHUTDOWN; // indicates why shutdown happened in awaitStatus / awaitReady
     protected WebSocketClient client;
     protected Requester requester;
-    protected IAudioSendFactory audioSendFactory = new DefaultSendFactory();
     protected SelfUser selfUser;
     protected ShardInfo shardInfo;
     protected long responseTotal;
@@ -152,7 +153,7 @@ public class JDAImpl implements JDA {
     protected final AtomicReference<ShutdownEvent> shutdownEvent = new AtomicReference<>(null);
 
     public JDAImpl(AuthorizationConfig authConfig) {
-        this(authConfig, null, null, null, null);
+        this(authConfig, null, null, null, null, null);
     }
 
     public JDAImpl(
@@ -160,12 +161,14 @@ public class JDAImpl implements JDA {
             SessionConfig sessionConfig,
             ThreadingConfig threadConfig,
             MetaConfig metaConfig,
-            RestConfig restConfig) {
+            RestConfig restConfig,
+            AudioModuleConfig audioModuleConfig) {
         this.authConfig = authConfig;
         this.threadConfig = threadConfig == null ? ThreadingConfig.getDefault() : threadConfig;
         this.sessionConfig = sessionConfig == null ? SessionConfig.getDefault() : sessionConfig;
         this.metaConfig = metaConfig == null ? MetaConfig.getDefault() : metaConfig;
         this.restConfig = restConfig == null ? new RestConfig() : restConfig;
+        this.audioModuleConfig = audioModuleConfig == null ? new AudioModuleConfig() : audioModuleConfig;
         this.shutdownHook =
                 this.metaConfig.isUseShutdownHook() ? new Thread(this::shutdownNow, "JDA Shutdown Hook") : null;
         this.presence = new PresenceImpl(this);
@@ -388,8 +391,14 @@ public class JDAImpl implements JDA {
         }
     }
 
+    @Nonnull
     public AuthorizationConfig getAuthorizationConfig() {
         return authConfig;
+    }
+
+    @Nonnull
+    public AudioModuleConfig getAudioModuleConfig() {
+        return audioModuleConfig;
     }
 
     @Nonnull
@@ -716,6 +725,17 @@ public class JDAImpl implements JDA {
             }
             return Collections.unmodifiableList(packs);
         });
+    }
+
+    @Nonnull
+    @Override
+    public RestAction<@Unmodifiable List<SoundboardSound>> retrieveDefaultSoundboardSounds() {
+        Route.CompiledRoute route = Route.SoundboardSounds.LIST_DEFAULT_SOUNDBOARD_SOUNDS.compile();
+        return new RestActionImpl<>(this, route, (response, request) -> Helpers.mapGracefully(
+                        response.getArray().stream(DataArray::getObject),
+                        entityBuilder::createSoundboardSound,
+                        "Failed to parse soundboard sound")
+                .collect(Helpers.toUnmodifiableList()));
     }
 
     @Nonnull
@@ -1115,6 +1135,18 @@ public class JDAImpl implements JDA {
 
     @Nonnull
     @Override
+    public RestAction<List<SKU>> retrieveSKUList() {
+        Route.CompiledRoute route =
+                Route.Applications.GET_SKUS.compile(getSelfUser().getApplicationId());
+        return new RestActionImpl<>(this, route, (response, request) -> Helpers.mapGracefully(
+                        response.getArray().stream(DataArray::getObject),
+                        EntityBuilder::createSKU,
+                        "Failed to parse SKU")
+                .collect(Helpers.toUnmodifiableList()));
+    }
+
+    @Nonnull
+    @Override
     public EntitlementPaginationAction retrieveEntitlements() {
         return new EntitlementPaginationActionImpl(this);
     }
@@ -1131,7 +1163,7 @@ public class JDAImpl implements JDA {
     @Nonnull
     @Override
     public TestEntitlementCreateAction createTestEntitlement(
-            long skuId, long ownerId, @Nonnull TestEntitlementCreateActionImpl.OwnerType ownerType) {
+            long skuId, long ownerId, @Nonnull TestEntitlementCreateAction.OwnerType ownerType) {
         Checks.notNull(ownerType, "ownerType");
 
         return new TestEntitlementCreateActionImpl(this, skuId, ownerId, ownerType);
@@ -1209,12 +1241,7 @@ public class JDAImpl implements JDA {
     }
 
     public IAudioSendFactory getAudioSendFactory() {
-        return audioSendFactory;
-    }
-
-    public void setAudioSendFactory(IAudioSendFactory factory) {
-        Checks.notNull(factory, "Provided IAudioSendFactory");
-        this.audioSendFactory = factory;
+        return audioModuleConfig.getAudioSendFactory();
     }
 
     public void setGatewayPing(long ping) {

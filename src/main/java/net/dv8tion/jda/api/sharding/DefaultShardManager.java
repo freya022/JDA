@@ -19,6 +19,7 @@ package net.dv8tion.jda.api.sharding;
 import gnu.trove.set.TIntSet;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.audio.AudioModuleConfig;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.SelfUser;
@@ -46,6 +47,7 @@ import net.dv8tion.jda.internal.utils.config.SessionConfig;
 import net.dv8tion.jda.internal.utils.config.ThreadingConfig;
 import net.dv8tion.jda.internal.utils.config.sharding.*;
 import okhttp3.Call;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 
@@ -74,9 +76,7 @@ import javax.annotation.Nullable;
 public class DefaultShardManager implements ShardManager {
     public static final Logger LOG = JDALogger.getLog(ShardManager.class);
     public static final ThreadFactory DEFAULT_THREAD_FACTORY = r -> {
-        Thread t = new Thread(r, "DefaultShardManager");
-        t.setPriority(Thread.NORM_PRIORITY + 1);
-        return t;
+        return new Thread(r, "DefaultShardManager");
     };
 
     /**
@@ -156,6 +156,9 @@ public class DefaultShardManager implements ShardManager {
 
     protected final IntFunction<? extends RestConfig> restConfigProvider;
 
+    @Nullable
+    protected final AudioModuleConfig audioModuleConfig;
+
     protected final IntFunction<GatewayConfig> gatewayConfigProvider;
 
     public DefaultShardManager(@Nonnull String token) {
@@ -163,7 +166,7 @@ public class DefaultShardManager implements ShardManager {
     }
 
     public DefaultShardManager(@Nonnull String token, @Nullable Collection<Integer> shardIds) {
-        this(token, shardIds, null, null, null, null, null, null, null, null, null);
+        this(token, shardIds, null, null, null, null, null, null, null, null, null, null);
     }
 
     public DefaultShardManager(
@@ -176,6 +179,7 @@ public class DefaultShardManager implements ShardManager {
             @Nullable ShardingSessionConfig sessionConfig,
             @Nullable ShardingMetaConfig metaConfig,
             @Nullable IntFunction<? extends RestConfig> restConfigProvider,
+            @Nullable AudioModuleConfig audioModuleConfig,
             @Nullable IntFunction<GatewayConfig> gatewayConfigProvider,
             @Nullable ChunkingFilter chunkingFilter) {
         this.token = token;
@@ -187,6 +191,7 @@ public class DefaultShardManager implements ShardManager {
         this.metaConfig = metaConfig == null ? ShardingMetaConfig.getDefault() : metaConfig;
         this.chunkingFilter = chunkingFilter == null ? ChunkingFilter.ALL : chunkingFilter;
         this.restConfigProvider = restConfigProvider == null ? (i) -> new RestConfig() : restConfigProvider;
+        this.audioModuleConfig = audioModuleConfig;
         this.gatewayConfigProvider =
                 gatewayConfigProvider == null ? (i) -> GatewayConfig.builder().build() : gatewayConfigProvider;
         this.executor = createExecutor(this.threadingConfig.getThreadFactory());
@@ -519,7 +524,8 @@ public class DefaultShardManager implements ShardManager {
             restConfig = new RestConfig();
         }
 
-        JDAImpl jda = new JDAImpl(authConfig, sessionConfig, threadingConfig, metaConfig, restConfig);
+        JDAImpl jda =
+                new JDAImpl(authConfig, sessionConfig, threadingConfig, metaConfig, restConfig, audioModuleConfig);
         jda.setMemberCachePolicy(shardingConfig.getMemberCachePolicy());
         threadingConfig.init(jda::getIdentifierString);
         jda.initRequester();
@@ -535,10 +541,6 @@ public class DefaultShardManager implements ShardManager {
 
         if (eventConfig.getEventManagerProvider() != null) {
             jda.setEventManager(this.eventConfig.getEventManagerProvider().apply(shardId));
-        }
-
-        if (this.sessionConfig.getAudioSendFactory() != null) {
-            jda.setAudioSendFactory(this.sessionConfig.getAudioSendFactory());
         }
 
         jda.addEventListener(this.eventConfig.getListeners().toArray());
@@ -732,7 +734,8 @@ public class DefaultShardManager implements ShardManager {
         public okhttp3.Response execute() {
             try {
                 RestConfig config = restConfigProvider.apply(0);
-                String url = config.getBaseUrl() + getRoute().getCompiledRoute();
+                HttpUrl baseUrl = HttpUrl.get(config.getBaseUrl());
+                HttpUrl url = getRoute().toHttpUrl(baseUrl);
                 LOG.debug("Requesting shard total with url {}", url);
 
                 okhttp3.Request.Builder builder = new okhttp3.Request.Builder()

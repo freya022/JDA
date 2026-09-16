@@ -20,7 +20,9 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     `kotlin-dsl`
-    id("java-gradle-plugin")
+    `java-gradle-plugin`
+
+    alias(libs.plugins.version.catalog.update)
 }
 
 repositories {
@@ -30,6 +32,10 @@ repositories {
 
 dependencies {
     implementation(gradleApi())
+    implementation(libs.gradle.plugin.download)
+    implementation(libs.javaparser)
+    implementation(libs.javapoet)
+    implementation(libs.tools.jackson)
 }
 
 kotlin {
@@ -39,10 +45,13 @@ kotlin {
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(25))
-        vendor.set(JvmVendorSpec.ADOPTIUM)
     }
 }
 
 tasks.withType(KotlinCompile::class).configureEach {
     jvmTargetValidationMode.set(JvmTargetValidationMode.IGNORE)
+}
+
+tasks.register("format") {
+    dependsOn("versionCatalogFormat")
 }

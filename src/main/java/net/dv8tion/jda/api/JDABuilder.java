@@ -17,6 +17,9 @@
 package net.dv8tion.jda.api;
 
 import com.neovisionaries.ws.client.WebSocketFactory;
+import net.dv8tion.jda.annotations.ReplaceWith;
+import net.dv8tion.jda.api.audio.AudioModuleConfig;
+import net.dv8tion.jda.api.audio.factory.DefaultSendFactory;
 import net.dv8tion.jda.api.audio.factory.IAudioSendFactory;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.events.Event;
@@ -61,7 +64,7 @@ import javax.annotation.Nullable;
  * This means that you can have listeners easily registered to multiple {@link net.dv8tion.jda.api.JDA} instances.
  */
 public class JDABuilder {
-    protected final List<Object> listeners = new LinkedList<>();
+    protected final List<Object> listeners = new ArrayList<>();
     protected final EnumSet<CacheFlag> automaticallyDisabled = EnumSet.noneOf(CacheFlag.class);
 
     protected ScheduledExecutorService rateLimitScheduler = null;
@@ -85,7 +88,6 @@ public class JDABuilder {
     protected WebSocketFactory wsFactory = null;
     protected String token = null;
     protected IEventManager eventManager = null;
-    protected IAudioSendFactory audioSendFactory = null;
     protected JDA.ShardInfo shardInfo = null;
     // Not the same as NONE! This is only kept for backward compatibility, GatewayConfig holds the real configuration
     @SuppressWarnings("deprecation")
@@ -103,6 +105,7 @@ public class JDABuilder {
     protected MemberCachePolicy memberCachePolicy = MemberCachePolicy.ALL;
     protected GatewayEncoding encoding = GatewayEncoding.JSON;
     protected RestConfig restConfig = new RestConfig();
+    protected AudioModuleConfig audioModuleConfig = null;
     protected GatewayConfig gatewayConfig = null;
 
     protected JDABuilder(@Nullable String token, int intents) {
@@ -1235,10 +1238,35 @@ public class JDABuilder {
      *         when creating new {@link net.dv8tion.jda.api.audio.factory.IAudioSendSystem} objects.
      *
      * @return The JDABuilder instance. Useful for chaining.
+     *
+     * @deprecated Use {@link #setAudioModuleConfig(AudioModuleConfig)} instead
      */
     @Nonnull
+    @Deprecated
+    @ReplaceWith("setAudioModuleConfig(new AudioModuleConfig().withAudioSendFactory(factory))")
     public JDABuilder setAudioSendFactory(@Nullable IAudioSendFactory factory) {
-        this.audioSendFactory = factory;
+        if (this.audioModuleConfig == null) {
+            this.audioModuleConfig = new AudioModuleConfig();
+        }
+
+        this.audioModuleConfig =
+                this.audioModuleConfig.withAudioSendFactory(factory == null ? new DefaultSendFactory() : factory);
+        return this;
+    }
+
+    /**
+     * Configures the audio module in JDA.
+     *
+     * <p>See {@link AudioModuleConfig} for details.
+     *
+     * @param  config
+     *         The new audio module config, or {@code null} to use defaults
+     *
+     * @return The JDABuilder instance. Useful for chaining.
+     */
+    @Nonnull
+    public JDABuilder setAudioModuleConfig(@Nullable AudioModuleConfig config) {
+        this.audioModuleConfig = config;
         return this;
     }
 
@@ -1777,7 +1805,8 @@ public class JDABuilder {
                 controller, httpClient, wsFactory, voiceDispatchInterceptor, flags, maxReconnectDelay, largeThreshold);
         MetaConfig metaConfig = new MetaConfig(contextMap, cacheFlags, flags);
 
-        JDAImpl jda = new JDAImpl(authConfig, sessionConfig, threadingConfig, metaConfig, restConfig);
+        JDAImpl jda =
+                new JDAImpl(authConfig, sessionConfig, threadingConfig, metaConfig, restConfig, audioModuleConfig);
         jda.setMemberCachePolicy(memberCachePolicy);
         // We can only do member chunking with the GUILD_MEMBERS intent
         if ((intents & GatewayIntent.GUILD_MEMBERS.getRawValue()) == 0) {
@@ -1788,10 +1817,6 @@ public class JDABuilder {
 
         if (eventManager != null) {
             jda.setEventManager(eventManager);
-        }
-
-        if (audioSendFactory != null) {
-            jda.setAudioSendFactory(audioSendFactory);
         }
 
         jda.addEventListener(listeners.toArray());
@@ -1824,8 +1849,10 @@ public class JDABuilder {
         return this;
     }
 
+    @SuppressWarnings("ReferenceEquality")
     protected void checkIntents() {
         boolean membersIntent = (intents & GatewayIntent.GUILD_MEMBERS.getRawValue()) != 0;
+        // Intentional comparison with reference equality to check if default is used
         if (!membersIntent && memberCachePolicy == MemberCachePolicy.ALL) {
             throw new IllegalStateException(
                     "Cannot use MemberCachePolicy.ALL without GatewayIntent.GUILD_MEMBERS enabled!");
@@ -1842,7 +1869,8 @@ public class JDABuilder {
 
             // Tell user how to disable this warning
             JDAImpl.LOG.warn(
-                    "You can manually disable these flags to remove this warning by using disableCache({}) on your JDABuilder",
+                    "You can manually disable these flags to remove this warning by using disableCache({}) on your"
+                            + " JDABuilder",
                     automaticallyDisabled.stream().map(it -> "CacheFlag." + it).collect(Collectors.joining(", ")));
             // Only print this warning once
             automaticallyDisabled.clear();

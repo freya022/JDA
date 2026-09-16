@@ -86,7 +86,7 @@ public class ChannelManagerImpl<T extends GuildChannel, M extends ChannelManager
     protected int position;
     protected int slowmode;
     protected int defaultThreadSlowmode;
-    protected int userlimit;
+    protected int userLimit;
     protected int bitrate;
 
     protected final Object lock = new Object();
@@ -311,7 +311,7 @@ public class ChannelManagerImpl<T extends GuildChannel, M extends ChannelManager
 
         Checks.notNull(permHolder, "PermissionHolder");
         Checks.check(permHolder.getGuild().equals(getGuild()), "PermissionHolder is not from the same Guild!");
-        return (M) removePermissionOverride(permHolder.getIdLong());
+        return removePermissionOverride(permHolder.getIdLong());
     }
 
     @Nonnull
@@ -534,7 +534,7 @@ public class ChannelManagerImpl<T extends GuildChannel, M extends ChannelManager
         } else {
             throw new IllegalStateException("Can only set userlimit on audio channels");
         }
-        this.userlimit = userLimit;
+        this.userLimit = userLimit;
         set |= USERLIMIT;
         return (M) this;
     }
@@ -755,7 +755,7 @@ public class ChannelManagerImpl<T extends GuildChannel, M extends ChannelManager
             frame.put("default_thread_rate_limit_per_user", defaultThreadSlowmode);
         }
         if (shouldUpdate(USERLIMIT)) {
-            frame.put("user_limit", userlimit);
+            frame.put("user_limit", userLimit);
         }
         if (shouldUpdate(BITRATE)) {
             frame.put("bitrate", bitrate);

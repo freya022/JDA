@@ -204,6 +204,11 @@ public interface JDA extends IGuildChannelContainer<Channel> {
             ShardInfo oInfo = (ShardInfo) o;
             return shardId == oInfo.getShardId() && shardTotal == oInfo.getShardTotal();
         }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(shardId, shardTotal);
+        }
     }
 
     /**
@@ -1746,6 +1751,15 @@ public interface JDA extends IGuildChannelContainer<Channel> {
     RestAction<@Unmodifiable List<StickerPack>> retrieveNitroStickerPacks();
 
     /**
+     * Retrieves a list of the default {@link SoundboardSound SoundboardSounds}.
+     *
+     * @return {@link RestAction} - Type: List of {@link SoundboardSound}
+     */
+    @Nonnull
+    @CheckReturnValue
+    RestAction<@Unmodifiable List<SoundboardSound>> retrieveDefaultSoundboardSounds();
+
+    /**
      * The EventManager used by this JDA instance.
      *
      * @return The {@link net.dv8tion.jda.api.hooks.IEventManager}
@@ -1882,6 +1896,20 @@ public interface JDA extends IGuildChannelContainer<Channel> {
     @Nonnull
     @CheckReturnValue
     RestAction<ApplicationInfo> retrieveApplicationInfo();
+
+    /**
+     * Retrieves all {@link SKU SKUs} for
+     * the application that owns the logged in Bot-Account.
+     *
+     * <br>Because of how SKUs and subscription systems work, you will see two SKUs for a subscription offering.
+     * For integration and testing entitlements for Subscriptions, you should use the SKU with type: {@link SKUType#SUBSCRIPTION}.
+     *
+     * @return {@link net.dv8tion.jda.api.requests.RestAction RestAction} - Type: {@link List} of {@link SKU SKU}
+     *         <br>The {@link SKU SKUs} of the bot's application.
+     */
+    @Nonnull
+    @CheckReturnValue
+    RestAction<List<SKU>> retrieveSKUList();
 
     /**
      * A {@link net.dv8tion.jda.api.requests.restaction.pagination.PaginationAction PaginationAction} implementation

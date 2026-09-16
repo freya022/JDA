@@ -31,6 +31,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import net.dv8tion.jda.api.entities.sticker.GuildSticker;
+import net.dv8tion.jda.api.utils.ImageFormat;
 import net.dv8tion.jda.internal.utils.EntityString;
 
 import javax.annotation.Nonnull;
@@ -160,6 +161,14 @@ public enum AuditLogKey {
      * <p>Expected type: <b>String</b>
      */
     GUILD_BANNER("banner_hash"),
+
+    /**
+     * Change of the primary brand color of a Guild.
+     * <br>The color is encoded as a hexadecimal string. For instance: {@code "#4fe2ca"}
+     *
+     * <p>Expected type: <b>String</b></p>
+     */
+    GUILD_BRAND_COLOR_PRIMARY("brand_color_primary"),
 
     /**
      * Change of the {@link net.dv8tion.jda.api.entities.Guild#getVerificationLevel() Guild.getVerificationLevel()} value.
@@ -586,7 +595,7 @@ public enum AuditLogKey {
 
     /**
      * Change of the {@link net.dv8tion.jda.api.entities.Webhook#getDefaultUser() Webhook.getDefaultUser()}'s avatar hash of a Webhook.
-     * <br>This is used to build the {@link net.dv8tion.jda.api.entities.User#getAvatarUrl() User.getAvatarUrl()}!
+     * <br>This is used to build the {@link net.dv8tion.jda.api.entities.User#getAvatarUrl(ImageFormat) User.getAvatarUrl(ImageFormat)}!
      *
      * <p>Expected type: <b>String</b>
      */

@@ -18,15 +18,15 @@ package net.dv8tion.jda.internal.requests;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.requests.*;
+import net.dv8tion.jda.api.requests.Request;
+import net.dv8tion.jda.api.requests.Response;
+import net.dv8tion.jda.api.requests.Route;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import net.dv8tion.jda.internal.JDAImpl;
 import net.dv8tion.jda.internal.utils.IOUtil;
 import net.dv8tion.jda.internal.utils.JDALogger;
 import net.dv8tion.jda.internal.utils.config.AuthorizationConfig;
-import okhttp3.Call;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.RequestBody;
+import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
@@ -73,7 +73,7 @@ public class Requester {
     protected final JDAImpl api;
     protected final AuthorizationConfig authConfig;
     private final RestRateLimiter rateLimiter;
-    private final String baseUrl;
+    private final HttpUrl baseUrl;
     private final String userAgent;
     private final Consumer<? super okhttp3.Request.Builder> customBuilder;
 
@@ -94,7 +94,7 @@ public class Requester {
         this.authConfig = authConfig;
         this.api = (JDAImpl) api;
         this.rateLimiter = rateLimiter;
-        this.baseUrl = config.getBaseUrl();
+        this.baseUrl = HttpUrl.get(config.getBaseUrl());
         this.userAgent = config.getUserAgent();
         this.customBuilder = config.getCustomBuilder();
         this.httpClient = this.api.getHttpClient();
@@ -136,32 +136,20 @@ public class Requester {
                 || e instanceof SSLPeerUnverifiedException; // SSL Certificate was wrong
     }
 
-    public okhttp3.Response execute(WorkTask task) {
+    private okhttp3.Response execute(WorkTask task) {
         return execute(task, false);
     }
 
-    /**
-     * Used to execute a Request. Processes request related to provided bucket.
-     *
-     * @param  task
-     *         The API request that needs to be sent
-     * @param  handleOnRateLimit
-     *         Whether to forward rate-limits, false if rate limit handling should take over
-     *
-     * @return Non-null if the request was ratelimited. Returns a Long containing retry_after milliseconds until
-     *         the request can be made again. This could either be for the Per-Route ratelimit or the Global ratelimit.
-     *         <br>Check if globalCooldown is {@code null} to determine if it was Per-Route or Global.
-     */
-    public okhttp3.Response execute(WorkTask task, boolean handleOnRateLimit) {
+    private okhttp3.Response execute(WorkTask task, boolean handleOnRateLimit) {
         return execute(task, false, handleOnRateLimit);
     }
 
-    public okhttp3.Response execute(WorkTask task, boolean retried, boolean handleOnRatelimit) {
+    private okhttp3.Response execute(WorkTask task, boolean retried, boolean handleOnRatelimit) {
         Route.CompiledRoute route = task.getRoute();
 
         okhttp3.Request.Builder builder = new okhttp3.Request.Builder();
 
-        String url = baseUrl + route.getCompiledRoute();
+        HttpUrl url = route.toHttpUrl(baseUrl);
         builder.url(url);
 
         Request<?> apiRequest = task.request;

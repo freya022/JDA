@@ -14,8 +14,23 @@
  * limitations under the License.
  */
 
-import net.dv8tion.jda.tasks.ProjectEnvironmentConfig
+import net.dv8tion.jda.gradle.plugins.ProjectEnvironmentConfig
+import net.dv8tion.jda.gradle.tasks.GenerateJDAInfo
+import org.gradle.kotlin.dsl.register
 
 val projectEnvironment = project.extensions.create(
     "projectEnvironment", ProjectEnvironmentConfig::class.java,
 )
+
+val generateJDAInfo = tasks.register<GenerateJDAInfo>("generateJDAInfo") {
+    description = "Generate the 'JDAInfo' Java source file"
+
+    version = projectEnvironment.version
+    commitHash = projectEnvironment.commitHash
+}
+
+val sourceSets = the<SourceSetContainer>()
+
+sourceSets.named("main").configure {
+    java.srcDir(generateJDAInfo)
+}
