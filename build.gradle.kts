@@ -15,22 +15,18 @@
  */
 
 import com.diffplug.spotless.LineEnding
-import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import de.undercouch.gradle.tasks.download.Download
 import net.dv8tion.jda.gradle.Version
-import net.dv8tion.jda.gradle.nullableReplacement
 import net.dv8tion.jda.gradle.plugins.applyAudioExclusions
 import net.dv8tion.jda.gradle.tasks.VerifyBytecodeVersion
+import net.ltgt.gradle.errorprone.errorprone
 import nl.littlerobots.vcu.plugin.resolver.VersionSelectors
-import org.apache.tools.ant.filters.ReplaceTokens
 import org.jetbrains.gradle.ext.Gradle as GradleRunConfiguration
 import org.jetbrains.gradle.ext.JUnit as JUnitRunConfiguration
 import org.jetbrains.gradle.ext.copyright
 import org.jetbrains.gradle.ext.runConfigurations
 import org.jetbrains.gradle.ext.settings
-import org.jreleaser.gradle.plugin.tasks.AbstractJReleaserTask
-import org.jreleaser.model.Active
 import org.openrewrite.gradle.AbstractRewriteTask
 
 plugins {
@@ -40,14 +36,16 @@ plugins {
     `model-generator`
     `java-library`
     `maven-publish`
+    signing
 
     alias(libs.plugins.shadow)
-    alias(libs.plugins.versions)
     alias(libs.plugins.version.catalog.update)
-    alias(libs.plugins.jreleaser)
     alias(libs.plugins.spotless)
+    alias(libs.plugins.errorprone)
     alias(libs.plugins.openrewrite)
     alias(libs.plugins.ideax)
+    alias(libs.plugins.nmcp)
+    alias(libs.plugins.nmcp.aggregation)
 }
 
 
@@ -57,8 +55,11 @@ plugins {
 //                                //
 ////////////////////////////////////
 
+val exampleJavaVersion = JavaLanguageVersion.of(25)
+val libraryJavaVersion = JavaLanguageVersion.of(8)
+
 projectEnvironment {
-    version = Version(major = "6", minor = "2", revision = "1", classifier = null)
+    version = Version(major = "6", minor = "6", revision = "0", classifier = null)
 }
 
 artifactFilters {
@@ -72,13 +73,13 @@ apiModelGenerator {
 
     generatorSuffix = "Dto"
     includes = listOf(
-        "AvailableLocalesEnum",
-        "CreateRoleRequest",
-        "MessageType",
-        "ChannelTypes",
-        "AuditLogActionTypes",
-        "InviteTypes",
-        "WebhookTypes",
+            "AvailableLocalesEnum",
+            "CreateRoleRequest",
+            "MessageType",
+            "ChannelTypes",
+            "AuditLogActionTypes",
+            "InviteTypes",
+            "WebhookTypes",
     )
 }
 
@@ -128,13 +129,13 @@ base {
     archivesName.set("JDA")
 }
 
-val examples by sourceSets.creating {
+val examples = sourceSets.create("examples") {
     java.srcDir("src/examples/java")
     compileClasspath += sourceSets["main"].output
     runtimeClasspath += sourceSets["main"].output
 }
 
-val testJava8 by sourceSets.creating {
+val testJava8 = sourceSets.create("testJava8") {
     java.srcDir("src/test-java8/java")
     resources.srcDir("src/test-java8/resources")
     compileClasspath += sourceSets["main"].output
@@ -142,13 +143,16 @@ val testJava8 by sourceSets.creating {
 }
 
 java {
+    withJavadocJar()
+    withSourcesJar()
+
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(25))
+        languageVersion.set(exampleJavaVersion)
     }
 }
 
 val java8Toolchain = javaToolchains.launcherFor {
-    languageVersion.set(JavaLanguageVersion.of(8))
+    languageVersion.set(libraryJavaVersion)
     vendor.set(JvmVendorSpec.ADOPTIUM)
 }
 
@@ -161,17 +165,17 @@ val java8Toolchain = javaToolchains.launcherFor {
 
 val currentJavaVersion = JavaVersion.current().majorVersion
 
-val mockitoAgent by configurations.creating
+val mockitoAgent = configurations.create("mockitoAgent")
 
-val testJava8Implementation by configurations.getting {
+val testJava8Implementation = configurations.getByName("testJava8Implementation") {
     extendsFrom(configurations.implementation.get())
 }
 
-val testJava8RuntimeOnly by configurations.getting {
+val testJava8RuntimeOnly = configurations.getByName("testJava8RuntimeOnly") {
     extendsFrom(configurations.runtimeOnly.get())
 }
 
-val examplesImplementation by configurations.getting {
+val examplesImplementation = configurations.getByName("examplesImplementation") {
     extendsFrom(configurations.implementation.get())
 }
 
@@ -204,13 +208,6 @@ dependencies {
 
     //Audio crypto libraries
     implementation(libs.tink)
-
-    //Sets the dependencies for the examples
-    configurations["examplesImplementation"].withDependencies {
-        addAll(configurations["api"].allDependencies)
-        addAll(configurations["implementation"].allDependencies)
-        addAll(configurations["compileOnly"].allDependencies)
-    }
 
     examplesImplementation(libs.jdave)
 
@@ -245,6 +242,12 @@ dependencies {
     // Needed for rewrite gradle tasks
     rewrite("org.openrewrite.recipe:rewrite-static-analysis")
     rewrite("net.dv8tion.jda:formatter-recipes")
+
+    // Linting & Formatting
+    errorprone(libs.errorprone.core)
+
+    // Publishing
+    nmcpAggregation(rootProject)
 }
 
 fun isNonStable(version: String): Boolean {
@@ -252,14 +255,6 @@ fun isNonStable(version: String): Boolean {
     val regex = "^[0-9,.v-]+(-r)?$".toRegex()
     val isStable = stableKeyword || regex.matches(version)
     return isStable.not()
-}
-
-tasks.withType<DependencyUpdatesTask> {
-    rejectVersionIf {
-        isNonStable(candidate.version)
-    }
-
-    gradleReleaseChannel = "current"
 }
 
 versionCatalogUpdate {
@@ -297,7 +292,7 @@ spotless {
     }
 
     java {
-        palantirJavaFormat("2.80.0")
+        palantirJavaFormat("2.84.0")
                 .formatJavadoc(false)
 
         val copyrightHeader = file("gradle/copyright-header.txt")
@@ -323,13 +318,27 @@ tasks.named("spotlessJavaApply").configure {
     dependsOn(tasks.named("rewriteRun"))
 }
 
+val enableErrorpronePatching = tasks.register("enableErrorpronePatching") {
+    group = "verification"
+
+    doFirst {
+        tasks.withType<JavaCompile>().configureEach {
+            options.errorprone {
+                errorproneArgs.add("-XepPatchChecks:MissingOverride")
+                errorproneArgs.add("-XepPatchLocation:IN_PLACE")
+            }
+        }
+    }
+}
+
 tasks.register("format") {
     group = "verification"
+    dependsOn(enableErrorpronePatching)
     dependsOn(tasks.named("spotlessApply"))
     dependsOn(tasks.named("versionCatalogFormat"))
 }
 
-val checkFormat by tasks.registering {
+val checkFormat = tasks.register("checkFormat") {
     group = "verification"
     dependsOn(tasks.named("spotlessCheck"))
     dependsOn(tasks.named("rewriteDryRun"))
@@ -359,70 +368,42 @@ tasks.withType(AbstractRewriteTask::class).configureEach {
 //                                //
 ////////////////////////////////////
 
-val jar by tasks.getting(Jar::class) {
+val jar = tasks.getByName<Jar>("jar") {
     archiveBaseName.set(project.name)
     manifest.attributes("Implementation-Version" to project.version, "Automatic-Module-Name" to "net.dv8tion.jda")
 }
 
-val shadowJar by tasks.getting(ShadowJar::class) {
+val shadowJar = tasks.getByName<ShadowJar>("shadowJar") {
     archiveClassifier.set("withDependencies")
     exclude("*.pom")
 }
 
-val sourcesForRelease by tasks.registering(Copy::class) {
-    from("src/main/java") {
-        include("**/JDAInfo.java")
-        val version = projectEnvironment.version.get()
-
-        val tokens = mapOf(
-                "versionMajor" to version.major,
-                "versionMinor" to version.minor,
-                "versionRevision" to version.revision,
-                "versionClassifier" to nullableReplacement(version.classifier),
-                "commitHash" to projectEnvironment.commitHash
-        )
-        // Allow for setting null on some strings without breaking the source
-        // for this, we have special tokens marked with "!@...@!" which are replaced to @...@
-        filter { it.replace(Regex("\"!@|@!\""), "@") }
-        // Then we can replace the @...@ with the respective values here
-        filter<ReplaceTokens>("tokens" to tokens)
-    }
-    into("build/filteredSrc")
-
-    includeEmptyDirs = false
-}
-
-val generateJavaSources by tasks.registering(SourceTask::class) {
-    val javaSources = sourceSets["main"].allJava.filter {
-        it.name != "JDAInfo.java"
-    }.asFileTree
-
-    source = javaSources + fileTree(sourcesForRelease.get().destinationDir)
-    dependsOn(sourcesForRelease)
-}
-
-val minimalJar by tasks.registering(ShadowJar::class) {
+val minimalJar = tasks.register<ShadowJar>("minimalJar") {
     dependsOn(shadowJar)
     minimize()
     archiveClassifier.set(shadowJar.archiveClassifier.get() + "-min")
 
-    configurations = shadowJar.configurations
     from(sourceSets["main"].output)
     applyAudioExclusions(artifactFilters)
-    manifest.from(jar.manifest)
 }
 
-val sourcesJar by tasks.registering(Jar::class) {
-    archiveClassifier.set("sources")
-    from("src/main/java") {
-        exclude("**/JDAInfo.java")
+tasks.withType<ShadowJar>().configureEach {
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    mergeServiceFiles()
+
+    exclude("**/LICENSE*")
+    exclude("**/LICENCE*")
+    exclude("**/README*")
+    exclude("**/NOTICE*")
+
+    if (this != shadowJar) {
+        manifest.from(shadowJar.manifest)
+        configurations = shadowJar.configurations
+        excludes.addAll(shadowJar.excludes)
     }
-    from(sourcesForRelease.get().destinationDir)
-
-    dependsOn(sourcesForRelease)
 }
 
-val javadoc by tasks.getting(Javadoc::class) {
+val javadoc = tasks.getByName<Javadoc>("javadoc") {
     isFailOnError = projectEnvironment.isGithubAction
 
     (options as? StandardJavadocDocletOptions)?.apply {
@@ -435,66 +416,84 @@ val javadoc by tasks.getting(Javadoc::class) {
         links("https://docs.oracle.com/en/java/javase/$currentJavaVersion/docs/api/", "https://takahikokawasaki.github.io/nv-websocket-client/")
 
         addStringOption("-link-modularity-mismatch", "info")
-        addStringOption("-release", "8")
+        addStringOption("-release", libraryJavaVersion.asInt().toString())
         addBooleanOption("-syntax-highlight", true)
         addBooleanOption("Xdoclint:all,-missing", true)
 
         overview = "$projectDir/overview.html"
     }
 
-    dependsOn(generateJavaSources)
-    source = generateJavaSources.get().source
-
     exclude {
         it.file.absolutePath.contains("internal", ignoreCase = false)
     }
 }
 
-val javadocJar by tasks.registering(Jar::class) {
-    dependsOn(javadoc)
-    archiveClassifier.set("javadoc")
-    from(javadoc.destinationDir)
-}
-
-tasks.withType<JavaCompile> {
+tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
     options.isIncremental = true
 
     options.compilerArgs.addAll(listOf(
-        "-Xlint:all",
-        // warnings for --release 8
-        "-Xlint:-options",
-        // warnings for missing serialVersionUID in exceptions (we don't intend for exceptions to be serialized)
-        "-Xlint:-serial",
-        // warnings for calling member methods in constructor, which we do for argument checks
-        "-Xlint:-this-escape",
-        // warnings for unused resource in try-with-resources (we use them for locks)
-        "-Xlint:-try",
-        // warnings for potentially unsafe varargs, this is already handled by @SafeVarargs
-        "-Xlint:-varargs",
+            "-Werror",
+            "-Xlint:all",
+            // warnings for --release 8
+            "-Xlint:-options",
+            // warnings for missing serialVersionUID in exceptions (we don't intend for exceptions to be serialized)
+            "-Xlint:-serial",
+            // warnings for calling member methods in constructor, which we do for argument checks
+            "-Xlint:-this-escape",
+            // warnings for unused resource in try-with-resources (we use them for locks)
+            "-Xlint:-try",
+            // warnings for potentially unsafe varargs, this is already handled by @SafeVarargs
+            "-Xlint:-varargs",
     ))
+
+    options.errorprone {
+        disable(
+                "AssignmentExpression",
+                "ByteBufferBackingArray",
+                "CheckReturnValue",
+                "DoubleCheckedLocking",
+                "EffectivelyPrivate",
+                "EmptyCatch",
+                "EnumOrdinal",
+                "Finalize",
+                "FutureReturnValueIgnored",
+                "InvalidBlockTag",
+                "JavaDurationGetSecondsToToSeconds",
+                "JavaTimeDefaultTimeZone",
+                "MathAbsoluteNegative",
+                "MixedMutabilityReturnType",
+                "OperatorPrecedence",
+                "StringSplitter",
+                "TypeParameterUnusedInFormals",
+                "UnnecessaryLambda",
+                "UnusedMethod",
+        )
+    }
+
+    mustRunAfter(enableErrorpronePatching)
 }
 
-val compileJava by tasks.getting(JavaCompile::class) {
-    dependsOn(generateJavaSources)
-    source = generateJavaSources.get().source
-
-    options.release = 8
+val compileJava = tasks.getByName<JavaCompile>("compileJava") {
+    options.release = libraryJavaVersion.asInt()
 }
 
 tasks.named<JavaCompile>("compileTestJava8Java") {
-    options.release = 8
+    options.release = libraryJavaVersion.asInt()
+}
+
+tasks.named<JavaCompile>("compileExamplesJava") {
+    options.errorprone {
+        disableAllChecks.set(true)
+    }
 }
 
 tasks.build.configure {
     dependsOn(jar)
-    dependsOn(javadocJar)
-    dependsOn(sourcesJar)
     dependsOn(shadowJar)
     dependsOn(minimalJar)
 
     jar.mustRunAfter(tasks.clean)
-    shadowJar.mustRunAfter(sourcesJar)
 }
 
 
@@ -505,7 +504,7 @@ tasks.build.configure {
 ////////////////////////////////////
 
 
-val downloadRecipeClasspath by tasks.registering(Download::class) {
+val downloadRecipeClasspath = tasks.register<Download>("downloadRecipeClasspath") {
     val targetVersion = "5.6.1"
     src("https://repo.maven.apache.org/maven2/net/dv8tion/JDA/$targetVersion/JDA-$targetVersion.jar")
     dest("src/test/resources/META-INF/rewrite/classpath/JDA-$targetVersion.jar")
@@ -531,10 +530,10 @@ tasks.test {
     useJUnitPlatform()
     failFast = false
 
-    jvmArgs = listOf(
-        "-javaagent:${mockitoAgent.asPath}",
-        // https://github.com/raphw/byte-buddy/issues/1803
-        "-Dnet.bytebuddy.safe=true"
+    jvmArgs(
+            "-javaagent:${mockitoAgent.asPath}",
+            // https://github.com/raphw/byte-buddy/issues/1803
+            "-Dnet.bytebuddy.safe=true"
     )
 
     testLogging {
@@ -546,7 +545,7 @@ tasks.test {
     }
 }
 
-val testJava8Compatibility by tasks.registering(Test::class) {
+val testJava8Compatibility = tasks.register<Test>("testJava8Compatibility") {
     group = "verification"
 
     useJUnitPlatform()
@@ -562,7 +561,7 @@ tasks.named("check").configure {
     dependsOn(testJava8Compatibility)
 }
 
-val verifyBytecodeVersion by tasks.registering(VerifyBytecodeVersion::class) {
+val verifyBytecodeVersion = tasks.register<VerifyBytecodeVersion>("verifyBytecodeVersion") {
     group = "verification"
 
     expectedMajorVersion = 52
@@ -627,6 +626,11 @@ shadow {
     addShadowVariantIntoJavaComponent = false
 }
 
+val mavenCentralUsername: String? = System.getenv("MAVENCENTRAL_USERNAME")?.takeIf { it.isNotBlank() }
+val mavenCentralPassword: String? = System.getenv("MAVENCENTRAL_TOKEN")?.takeIf { it.isNotBlank() }
+val gpgSecretKey: String? = System.getenv("GPG_SECRET_KEY")?.takeIf { it.isNotBlank() }
+val gpgPassphrase: String? = System.getenv("GPG_PASSPHRASE")?.takeIf { it.isNotBlank() }
+
 val stagingDirectory = layout.buildDirectory.dir("staging-deploy").get()
 
 publishing {
@@ -638,47 +642,26 @@ publishing {
             groupId = project.group as String
             version = project.version as String
 
-            artifact(sourcesJar)
-            artifact(javadocJar)
-
             pom.populate()
         }
     }
+}
 
-    repositories.maven {
-        url = stagingDirectory.asFile.toURI()
+if (gpgSecretKey != null) {
+    signing {
+        useInMemoryPgpKeys(gpgSecretKey, gpgPassphrase ?: "")
+        sign(publishing.publications)
     }
 }
 
-jreleaser {
-    project {
-        versionPattern = "CUSTOM"
+nmcpAggregation {
+    localRepository {
+        name = "staging-deploy"
+        path = stagingDirectory.asFile.path
     }
 
-    release {
-        github {
-            enabled = false
-        }
+    centralPortal {
+        username.set(mavenCentralUsername)
+        password.set(mavenCentralPassword)
     }
-
-    signing.pgp {
-        active = Active.RELEASE
-        armored = true
-    }
-
-    deploy {
-        maven {
-            mavenCentral {
-                register("sonatype") {
-                    active = Active.RELEASE
-                    url = "https://central.sonatype.com/api/v1/publisher"
-                    stagingRepository(stagingDirectory.asFile.relativeTo(projectDir).path)
-                }
-            }
-        }
-    }
-}
-
-tasks.withType<AbstractJReleaserTask>().configureEach {
-    mustRunAfter(tasks.named("publish"))
 }

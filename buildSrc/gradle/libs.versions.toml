@@ -1,8 +1,8 @@
 [libraries]
-gradle-plugin-download = "de.undercouch.download:de.undercouch.download.gradle.plugin:5.6.0"
-javaparser = "com.github.javaparser:javaparser-symbol-solver-core:3.27.1"
-javapoet = "com.palantir.javapoet:javapoet:0.9.0"
-tools-jackson = "tools.jackson.core:jackson-databind:3.0.3"
+gradle-plugin-download = "de.undercouch.download:de.undercouch.download.gradle.plugin:5.7.0"
+javaparser = "com.github.javaparser:javaparser-symbol-solver-core:3.28.2"
+javapoet = "com.palantir.javapoet:javapoet:0.19.0"
+tools-jackson = "tools.jackson.core:jackson-databind:3.2.2"
 
 [plugins]
-version-catalog-update = "nl.littlerobots.version-catalog-update:1.0.1"
+version-catalog-update = "nl.littlerobots.version-catalog-update:1.1.1"

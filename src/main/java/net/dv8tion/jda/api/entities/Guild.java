@@ -32,6 +32,7 @@ import net.dv8tion.jda.api.entities.channel.attribute.IInviteContainer;
 import net.dv8tion.jda.api.entities.channel.concrete.*;
 import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.StandardGuildChannel;
 import net.dv8tion.jda.api.entities.channel.unions.DefaultGuildChannelUnion;
 import net.dv8tion.jda.api.entities.detached.IDetachableEntity;
@@ -50,6 +51,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.privileges.IntegrationPrivilege;
 import net.dv8tion.jda.api.managers.*;
+import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.*;
@@ -59,9 +61,8 @@ import net.dv8tion.jda.api.requests.restaction.order.RoleOrderAction;
 import net.dv8tion.jda.api.requests.restaction.pagination.AuditLogPaginationAction;
 import net.dv8tion.jda.api.requests.restaction.pagination.BanPaginationAction;
 import net.dv8tion.jda.api.requests.restaction.pagination.PaginationAction;
-import net.dv8tion.jda.api.utils.FileUpload;
-import net.dv8tion.jda.api.utils.ImageProxy;
-import net.dv8tion.jda.api.utils.MiscUtil;
+import net.dv8tion.jda.api.utils.*;
+import net.dv8tion.jda.api.utils.DiscordAssets;
 import net.dv8tion.jda.api.utils.cache.*;
 import net.dv8tion.jda.api.utils.concurrent.Task;
 import net.dv8tion.jda.internal.interactions.CommandDataImpl;
@@ -96,11 +97,26 @@ import javax.annotation.Nullable;
  * @see JDA#getGuilds()
  */
 public interface Guild extends IGuildChannelContainer<GuildChannel>, ISnowflake, IDetachableEntity {
-    /** Template for {@link #getIconUrl()}. */
+    /**
+     * Template for {@link #getIconUrl()}.
+     *
+     * @deprecated Replaced by {@link DiscordAssets#guildIcon(ImageFormat, String, String)}
+     */
+    @Deprecated
     String ICON_URL = "https://cdn.discordapp.com/icons/%s/%s.%s";
-    /** Template for {@link #getSplashUrl()}. */
+    /**
+     * Template for {@link #getSplashUrl()}.
+     *
+     * @deprecated Replaced by {@link DiscordAssets#guildSplash(ImageFormat, String, String)}
+     */
+    @Deprecated
     String SPLASH_URL = "https://cdn.discordapp.com/splashes/%s/%s.png";
-    /** Template for {@link #getBannerUrl()}. */
+    /**
+     * Template for {@link #getBannerUrl()}.
+     *
+     * @deprecated Replaced by {@link DiscordAssets#guildBanner(ImageFormat, String, String)}
+     */
+    @Deprecated
     String BANNER_URL = "https://cdn.discordapp.com/banners/%s/%s.%s";
 
     /**
@@ -744,7 +760,31 @@ public interface Guild extends IGuildChannelContainer<GuildChannel>, ISnowflake,
         String iconId = getIconId();
         return iconId == null
                 ? null
-                : String.format(ICON_URL, getId(), iconId, iconId.startsWith("a_") ? "gif" : "png");
+                : getIconUrl(iconId.startsWith("a_") ? ImageFormat.ANIMATED_WEBP : ImageFormat.PNG);
+    }
+
+    /**
+     * The URL of the {@link net.dv8tion.jda.api.entities.Guild Guild} icon image.
+     * If no icon has been set, this returns {@code null}.
+     * <p>
+     * The Guild icon can be modified using {@link GuildManager#setIcon(Icon)}.
+     *
+     * @param  format
+     *         The format in which the image should be
+     *
+     * @throws IllegalArgumentException
+     *         If the format is {@code null}
+     * @throws net.dv8tion.jda.api.exceptions.DetachedEntityException
+     *         If this entity is {@link #isDetached() detached}
+     *
+     * @return Possibly-null String containing the Guild's icon URL.
+     *
+     * @see    DiscordAssets#guildIcon(ImageFormat, String, String)
+     */
+    @Nullable
+    default String getIconUrl(@Nonnull ImageFormat format) {
+        ImageProxy icon = getIcon(format);
+        return icon == null ? null : icon.getUrl();
     }
 
     /**
@@ -761,6 +801,28 @@ public interface Guild extends IGuildChannelContainer<GuildChannel>, ISnowflake,
     default ImageProxy getIcon() {
         String iconUrl = getIconUrl();
         return iconUrl == null ? null : new ImageProxy(iconUrl);
+    }
+
+    /**
+     * Returns an {@link ImageProxy} for this guild's icon.
+     *
+     * @param  format
+     *         The format in which the image should be
+     *
+     * @throws IllegalArgumentException
+     *         If the format is {@code null}
+     * @throws net.dv8tion.jda.api.exceptions.DetachedEntityException
+     *         If this entity is {@link #isDetached() detached}
+     *
+     * @return The {@link ImageProxy} of this guild's icon
+     *
+     * @see    #getIconUrl(ImageFormat)
+     * @see    DiscordAssets#guildIcon(ImageFormat, String, String)
+     */
+    @Nullable
+    default ImageProxy getIcon(@Nonnull ImageFormat format) {
+        String iconId = getIconId();
+        return iconId == null ? null : DiscordAssets.guildIcon(format, getId(), iconId);
     }
 
     /**
@@ -818,7 +880,33 @@ public interface Guild extends IGuildChannelContainer<GuildChannel>, ISnowflake,
     @Nullable
     default String getSplashUrl() {
         String splashId = getSplashId();
-        return splashId == null ? null : String.format(SPLASH_URL, getId(), splashId);
+        return splashId == null ? null : getSplashUrl(ImageFormat.PNG);
+    }
+
+    /**
+     * The URL of the splash image for this Guild. A Splash image is an image displayed when viewing a
+     * Discord Guild Invite on the web or in client just before accepting or declining the invite.
+     * If no splash has been set, this returns {@code null}.
+     * <br>Splash images are VIP/Partner Guild only.
+     * <p>
+     * The Guild splash can be modified using {@link GuildManager#setSplash(Icon)}.
+     *
+     * @param  format
+     *         The format in which the image should be
+     *
+     * @throws IllegalArgumentException
+     *         If the format is {@code null}
+     * @throws net.dv8tion.jda.api.exceptions.DetachedEntityException
+     *         If this entity is {@link #isDetached() detached}
+     *
+     * @return Possibly-null String containing the Guild's splash URL.
+     *
+     * @see    DiscordAssets#guildSplash(ImageFormat, String, String)
+     */
+    @Nullable
+    default String getSplashUrl(@Nonnull ImageFormat format) {
+        ImageProxy splash = getSplash(format);
+        return splash == null ? null : splash.getUrl();
     }
 
     /**
@@ -835,6 +923,27 @@ public interface Guild extends IGuildChannelContainer<GuildChannel>, ISnowflake,
     default ImageProxy getSplash() {
         String splashUrl = getSplashUrl();
         return splashUrl == null ? null : new ImageProxy(splashUrl);
+    }
+
+    /**
+     * Returns an {@link ImageProxy} for this guild's splash icon.
+     *
+     * @param  format
+     *         The format in which the image should be
+     *
+     * @throws IllegalArgumentException
+     *         If the format is {@code null}
+     * @throws net.dv8tion.jda.api.exceptions.DetachedEntityException
+     *         If this entity is {@link #isDetached() detached}
+     *
+     * @return Possibly-null {@link ImageProxy} of this guild's splash icon
+     *
+     * @see    #getSplashUrl(ImageFormat)
+     * @see    DiscordAssets#guildSplash(ImageFormat, String, String)
+     */
+    @Nullable
+    default ImageProxy getSplash(@Nonnull ImageFormat format) {
+        return DiscordAssets.guildSplash(format, getId(), getSplashId());
     }
 
     /**
@@ -930,7 +1039,7 @@ public interface Guild extends IGuildChannelContainer<GuildChannel>, ISnowflake,
      *
      * @return The guild banner id or null
      *
-     * @see    #getBannerUrl()
+     * @see    #getBannerUrl(ImageFormat)
      */
     @Nullable
     String getBannerId();
@@ -951,7 +1060,31 @@ public interface Guild extends IGuildChannelContainer<GuildChannel>, ISnowflake,
         String bannerId = getBannerId();
         return bannerId == null
                 ? null
-                : String.format(BANNER_URL, getId(), bannerId, bannerId.startsWith("a_") ? "gif" : "png");
+                : getBannerUrl(bannerId.startsWith("a_") ? ImageFormat.ANIMATED_WEBP : ImageFormat.PNG);
+    }
+
+    /**
+     * The guild banner url.
+     * <br>This is shown in guilds below the guild name.
+     *
+     * <p>The banner can be modified using {@link GuildManager#setBanner(Icon)}.
+     *
+     * @param  format
+     *         The format in which the image should be
+     *
+     * @throws IllegalArgumentException
+     *         If the format is {@code null}
+     * @throws net.dv8tion.jda.api.exceptions.DetachedEntityException
+     *         If this entity is {@link #isDetached() detached}
+     *
+     * @return The guild banner url or null
+     *
+     * @see    DiscordAssets#guildBanner(ImageFormat, String, String)
+     */
+    @Nullable
+    default String getBannerUrl(@Nonnull ImageFormat format) {
+        ImageProxy banner = getBanner(format);
+        return banner == null ? null : banner.getUrl();
     }
 
     /**
@@ -968,6 +1101,27 @@ public interface Guild extends IGuildChannelContainer<GuildChannel>, ISnowflake,
     default ImageProxy getBanner() {
         String bannerUrl = getBannerUrl();
         return bannerUrl == null ? null : new ImageProxy(bannerUrl);
+    }
+
+    /**
+     * Returns an {@link ImageProxy} for this guild's banner image.
+     *
+     * @param  format
+     *         The format in which the image should be
+     *
+     * @throws IllegalArgumentException
+     *         If the format is {@code null}
+     * @throws net.dv8tion.jda.api.exceptions.DetachedEntityException
+     *         If this entity is {@link #isDetached() detached}
+     *
+     * @return Possibly-null {@link ImageProxy} of this guild's banner image
+     *
+     * @see    #getBannerUrl(ImageFormat)
+     * @see    DiscordAssets#guildBanner(ImageFormat, String, String)
+     */
+    @Nullable
+    default ImageProxy getBanner(@Nonnull ImageFormat format) {
+        return DiscordAssets.guildBanner(format, getId(), getBannerId());
     }
 
     /**
@@ -2338,6 +2492,111 @@ public interface Guild extends IGuildChannelContainer<GuildChannel>, ISnowflake,
     SnowflakeCacheView<GuildSticker> getStickerCache();
 
     /**
+     * Gets a {@link SoundboardSound} from this guild that has the same id as the
+     * one provided.
+     * <br>If there is no {@link SoundboardSound} with an id that matches the provided
+     * one, then this returns {@code null}.
+     *
+     * <p>This requires the {@link CacheFlag#SOUNDBOARD_SOUNDS} to be enabled!
+     *
+     * @param  id
+     *         the soundboard sound id
+     *
+     * @throws NumberFormatException
+     *         If the provided {@code id} cannot be parsed by {@link Long#parseLong(String)}
+     * @throws net.dv8tion.jda.api.exceptions.DetachedEntityException
+     *         If this entity is {@link #isDetached() detached}
+     *
+     * @return A Soundboard sound matching the specified id
+     */
+    @Nullable
+    default SoundboardSound getSoundboardSoundById(@Nonnull String id) {
+        return getSoundboardSoundCache().getElementById(id);
+    }
+
+    /**
+     * Gets a {@link SoundboardSound} from this guild that has the same id as the
+     * one provided.
+     * <br>If there is no {@link SoundboardSound} with an id that matches the provided
+     * one, then this returns {@code null}.
+     *
+     * <p>This requires the {@link CacheFlag#SOUNDBOARD_SOUNDS} to be enabled!
+     *
+     * @param  id
+     *         the soundboard sound id
+     *
+     * @throws net.dv8tion.jda.api.exceptions.DetachedEntityException
+     *         If this entity is {@link #isDetached() detached}
+     *
+     * @return A Soundboard sound matching the specified id
+     */
+    @Nullable
+    default SoundboardSound getSoundboardSoundById(long id) {
+        return getSoundboardSoundCache().getElementById(id);
+    }
+
+    /**
+     * Gets all custom {@link SoundboardSound SoundboardSounds} belonging to this guild.
+     * <br>Soundboard sounds are not ordered in any specific way in the returned list.
+     *
+     * <p>This copies the backing store into a list. This means every call
+     * creates a new list with O(n) complexity. It is recommended to store this into
+     * a local variable or use {@link #getSoundboardSoundCache()} and use its more efficient
+     * versions of handling these values.
+     *
+     * <p>This requires the {@link CacheFlag#SOUNDBOARD_SOUNDS} to be enabled!
+     *
+     * @throws net.dv8tion.jda.api.exceptions.DetachedEntityException
+     *         If this entity is {@link #isDetached() detached}
+     *
+     * @return An immutable List of {@link SoundboardSound SoundboardSounds}.
+     */
+    @Nonnull
+    @Unmodifiable
+    default List<SoundboardSound> getSoundboardSounds() {
+        return getSoundboardSoundCache().asList();
+    }
+
+    /**
+     * Gets a list of all {@link SoundboardSound SoundboardSounds} in this Guild that have the same
+     * name as the one provided.
+     * <br>If there are no {@link SoundboardSound SoundboardSounds} with the provided name, then this returns an empty list.
+     *
+     * <p>This requires the {@link CacheFlag#SOUNDBOARD_SOUNDS} to be enabled!
+     *
+     * @param  name
+     *         The name used to filter the returned {@link SoundboardSound SoundboardSounds}.
+     * @param  ignoreCase
+     *         Determines if the comparison ignores case when comparing. True - case insensitive.
+     *
+     * @throws net.dv8tion.jda.api.exceptions.DetachedEntityException
+     *         If this entity is {@link #isDetached() detached}
+     *
+     * @return Possibly-empty immutable list of all SoundboardSounds that match the provided name.
+     */
+    @Nonnull
+    @Unmodifiable
+    default List<SoundboardSound> getSoundboardSoundsByName(@Nonnull String name, boolean ignoreCase) {
+        return getSoundboardSoundCache().getElementsByName(name, ignoreCase);
+    }
+
+    /**
+     * {@link SnowflakeCacheView} of all cached {@link SoundboardSound SoundboardSounds} of this Guild.
+     * <br>This does not include {@link JDA#retrieveDefaultSoundboardSounds() default sounds}.
+     *
+     * <p>This will be empty if {@link CacheFlag#SOUNDBOARD_SOUNDS} is disabled!
+     *
+     * @throws net.dv8tion.jda.api.exceptions.DetachedEntityException
+     *         If this entity is {@link #isDetached() detached}
+     *
+     * @return {@link SnowflakeCacheView} - Type: {@link SoundboardSound}
+     *
+     * @see    JDA#retrieveDefaultSoundboardSounds()
+     */
+    @Nonnull
+    SnowflakeCacheView<SoundboardSound> getSoundboardSoundCache();
+
+    /**
      * Retrieves an immutable list of Custom Emojis together with their respective creators.
      *
      * <p>Note that {@link RichCustomEmoji#getOwner()} is only available if the currently
@@ -2504,7 +2763,8 @@ public interface Guild extends IGuildChannelContainer<GuildChannel>, ISnowflake,
      * @throws IllegalArgumentException
      *         If null is provided
      * @throws net.dv8tion.jda.api.exceptions.InsufficientPermissionException
-     *         If the currently logged in account does not have {@link Permission#MANAGE_GUILD_EXPRESSIONS MANAGE_GUILD_EXPRESSIONS} in the guild.
+     *         If the currently logged in account does not have {@link Permission#MANAGE_GUILD_EXPRESSIONS MANAGE_GUILD_EXPRESSIONS}
+     *         nor {@link Permission#CREATE_GUILD_EXPRESSIONS CREATE_GUILD_EXPRESSIONS} in the guild.
      * @throws net.dv8tion.jda.api.exceptions.DetachedEntityException
      *         If this entity is {@link #isDetached() detached}
      *
@@ -2513,6 +2773,76 @@ public interface Guild extends IGuildChannelContainer<GuildChannel>, ISnowflake,
     @Nonnull
     @CheckReturnValue
     GuildStickerManager editSticker(@Nonnull StickerSnowflake sticker);
+
+    /**
+     * Retrieves all the soundboard sounds from this guild.
+     * <br>This also includes {@link SoundboardSound#isAvailable() unavailable} soundboard sounds.
+     *
+     * <p>If {@link CacheFlag#SOUNDBOARD_SOUNDS} is enabled, this action immediately returns the cached sounds.
+     *
+     * @throws net.dv8tion.jda.api.exceptions.DetachedEntityException
+     *         If this entity is {@link #isDetached() detached}
+     *
+     * @return {@link CacheRestAction} - Type: List of {@link SoundboardSound}
+     */
+    @Nonnull
+    @CheckReturnValue
+    CacheRestAction<List<SoundboardSound>> retrieveSoundboardSounds();
+
+    /**
+     * Attempts to retrieve a {@link SoundboardSound} object for this guild based on the provided snowflake reference.
+     *
+     * <p>If {@link CacheFlag#SOUNDBOARD_SOUNDS} is enabled, this action immediately returns the cached sound.
+     *
+     * <p>The returned {@link net.dv8tion.jda.api.requests.RestAction RestAction} can encounter the following Discord errors:
+     * <ul>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#UNKNOWN_SOUND UNKNOWN_SOUND}
+     *     <br>Occurs when the provided id does not refer to a soundboard sound known by Discord.</li>
+     * </ul>
+     *
+     * @param  sound
+     *         The reference of the requested {@link SoundboardSound}.
+     *
+     * @throws IllegalArgumentException
+     *         If {@code null} is provided
+     * @throws net.dv8tion.jda.api.exceptions.DetachedEntityException
+     *         If this entity is {@link #isDetached() detached}
+     *
+     * @return {@link CacheRestAction} - Type: {@link SoundboardSound}
+     */
+    @Nonnull
+    @CheckReturnValue
+    CacheRestAction<SoundboardSound> retrieveSoundboardSound(@Nonnull SoundboardSoundSnowflake sound);
+
+    /**
+     * Modify a soundboard sound using {@link SoundboardSoundManager}.
+     * <br>You can update multiple fields at once, by calling the respective setters before executing the request.
+     *
+     * <p>The returned {@link net.dv8tion.jda.api.requests.RestAction RestAction} can encounter the following Discord errors:
+     * <ul>
+     *     <li>{@link ErrorResponse#UNKNOWN_SOUND UNKNOWN_SOUND}
+     *     <br>Occurs when the provided id does not refer to a soundboard sound known by Discord.</li>
+     *     <li>{@link ErrorResponse#INVALID_EMOJI INVALID_EMOJI}
+     *     <br>The emoji is invalid</li>
+     *     <li>{@link ErrorResponse#MISSING_PERMISSIONS MISSING_PERMISSIONS}
+     *     <br>The sound cannot be deleted due to a permission discrepancy</li>
+     * </ul>
+     *
+     * @param  sound
+     *         The reference of the {@link SoundboardSound}.
+     *
+     * @throws IllegalArgumentException
+     *         If {@code null} is provided
+     * @throws net.dv8tion.jda.api.exceptions.InsufficientPermissionException
+     *         If the currently logged in account does not have {@link Permission#MANAGE_GUILD_EXPRESSIONS MANAGE_GUILD_EXPRESSIONS} in the guild.
+     * @throws net.dv8tion.jda.api.exceptions.DetachedEntityException
+     *         If this entity is {@link #isDetached() detached}
+     *
+     * @return {@link SoundboardSoundManager}
+     */
+    @Nonnull
+    @CheckReturnValue
+    SoundboardSoundManager editSoundboardSound(@Nonnull SoundboardSoundSnowflake sound);
 
     /**
      * Retrieves an immutable list of the currently banned {@link net.dv8tion.jda.api.entities.User Users}.
@@ -2582,7 +2912,15 @@ public interface Guild extends IGuildChannelContainer<GuildChannel>, ISnowflake,
      *         Minimum number of days since a member has been offline to get affected.
      *
      * @throws net.dv8tion.jda.api.exceptions.InsufficientPermissionException
-     *         If the account doesn't have {@link net.dv8tion.jda.api.Permission#KICK_MEMBERS KICK_MEMBER} Permission.
+     *         <ul>
+     *             <li>If the server has the {@code PRUNE_REQUIRES_ADMIN} feature enabled,
+     *                 and the account doesn't have {@link net.dv8tion.jda.api.Permission#ADMINISTRATOR ADMINISTRATOR} Permission
+     *             </li>
+     *             <li>If the server <b>does not</b> have the {@code PRUNE_REQUIRES_ADMIN} feature enabled,
+     *                 and the account doesn't have {@link net.dv8tion.jda.api.Permission#KICK_MEMBERS KICK_MEMBERS}
+     *                 and {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} Permission
+     *             </li>
+     *         </ul>
      * @throws IllegalArgumentException
      *         If the provided days are less than {@code 1} or more than {@code 30}
      * @throws net.dv8tion.jda.api.exceptions.DetachedEntityException
@@ -3899,7 +4237,7 @@ public interface Guild extends IGuildChannelContainer<GuildChannel>, ISnowflake,
      * the returned {@link RestAction RestAction} include the following:
      * <ul>
      *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#MISSING_PERMISSIONS MISSING_PERMISSIONS}
-     *     <br>The prune cannot finished due to a permission discrepancy</li>
+     *     <br>The prune cannot be finished due to a permission discrepancy</li>
      * </ul>
      *
      * @param  days
@@ -3908,7 +4246,15 @@ public interface Guild extends IGuildChannelContainer<GuildChannel>, ISnowflake,
      *         Optional roles to include in prune filter
      *
      * @throws net.dv8tion.jda.api.exceptions.InsufficientPermissionException
-     *         If the account doesn't have {@link net.dv8tion.jda.api.Permission#KICK_MEMBERS KICK_MEMBER} Permission.
+     *         <ul>
+     *             <li>If the server has the {@code PRUNE_REQUIRES_ADMIN} feature enabled,
+     *                 and the account doesn't have {@link net.dv8tion.jda.api.Permission#ADMINISTRATOR ADMINISTRATOR} Permission
+     *             </li>
+     *             <li>If the server <b>does not</b> have the {@code PRUNE_REQUIRES_ADMIN} feature enabled,
+     *                 and the account doesn't have {@link net.dv8tion.jda.api.Permission#KICK_MEMBERS KICK_MEMBERS}
+     *                 and {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} Permission
+     *             </li>
+     *         </ul>
      * @throws IllegalArgumentException
      *         <ul>
      *             <li>If the provided days are not in the range from 1 to 30 (inclusive)</li>
@@ -3939,7 +4285,7 @@ public interface Guild extends IGuildChannelContainer<GuildChannel>, ISnowflake,
      * the returned {@link RestAction RestAction} include the following:
      * <ul>
      *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#MISSING_PERMISSIONS MISSING_PERMISSIONS}
-     *     <br>The prune cannot finished due to a permission discrepancy</li>
+     *     <br>The prune cannot be finished due to a permission discrepancy</li>
      * </ul>
      *
      * @param  days
@@ -3950,7 +4296,15 @@ public interface Guild extends IGuildChannelContainer<GuildChannel>, ISnowflake,
      *         Optional roles to include in prune filter
      *
      * @throws net.dv8tion.jda.api.exceptions.InsufficientPermissionException
-     *         If the account doesn't have {@link net.dv8tion.jda.api.Permission#KICK_MEMBERS KICK_MEMBER} Permission.
+     *         <ul>
+     *             <li>If the server has the {@code PRUNE_REQUIRES_ADMIN} feature enabled,
+     *                 and the account doesn't have {@link net.dv8tion.jda.api.Permission#ADMINISTRATOR ADMINISTRATOR} Permission
+     *             </li>
+     *             <li>If the server <b>does not</b> have the {@code PRUNE_REQUIRES_ADMIN} feature enabled,
+     *                 and the account doesn't have {@link net.dv8tion.jda.api.Permission#KICK_MEMBERS KICK_MEMBERS}
+     *                 and {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} Permission
+     *             </li>
+     *         </ul>
      * @throws IllegalArgumentException
      *         <ul>
      *             <li>If the provided days are not in the range from 1 to 30 (inclusive)</li>
@@ -5463,7 +5817,8 @@ public interface Guild extends IGuildChannelContainer<GuildChannel>, ISnowflake,
      * @throws IllegalStateException
      *         If null is provided
      * @throws net.dv8tion.jda.api.exceptions.InsufficientPermissionException
-     *         If the currently logged in account does not have {@link Permission#MANAGE_GUILD_EXPRESSIONS MANAGE_GUILD_EXPRESSIONS} in the guild.
+     *         If the currently logged in account does not have {@link Permission#MANAGE_GUILD_EXPRESSIONS MANAGE_GUILD_EXPRESSIONS}
+     *         nor {@link Permission#CREATE_GUILD_EXPRESSIONS CREATE_GUILD_EXPRESSIONS} in the guild.
      * @throws net.dv8tion.jda.api.exceptions.DetachedEntityException
      *         If this entity is {@link #isDetached() detached}
      *
@@ -5472,6 +5827,70 @@ public interface Guild extends IGuildChannelContainer<GuildChannel>, ISnowflake,
     @Nonnull
     @CheckReturnValue
     AuditableRestAction<Void> deleteSticker(@Nonnull StickerSnowflake id);
+
+    /**
+     * Creates a soundboard sound in the guild.
+     *
+     * <p>The returned {@link RestAction} can encounter the following {@link net.dv8tion.jda.api.requests.ErrorResponse ErrorResponses}:
+     * <ul>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#INVALID_FILE_EXCEEDS_MAXIMUM_LENGTH INVALID_FILE_EXCEEDS_MAXIMUM_LENGTH}
+     *     <br>The provided file exceeds the duration of 5.2 seconds</li>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#MAX_SOUNDBOARD_SOUNDS MAX_SOUNDBOARD_SOUNDS}
+     *     <br>The maximum amount of soundboard sounds have been created, depends on the server boosts</li>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#INVALID_EMOJI INVALID_EMOJI}
+     *     <br>The emoji is invalid</li>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#INVALID_FORM_BODY INVALID_FORM_BODY}
+     *     <br>The file is too large</li>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#INVALID_FILE INVALID_FILE}
+     *     <br>The file is malformed</li>
+     * </ul>
+     *
+     * @param name
+     *        The name of the soundboard sound, must be between 2-32 characters
+     * @param file
+     *        The file to use as the sound, can be an MP3 or an OGG file
+     *
+     * @throws IllegalArgumentException
+     *         <ul>
+     *             <li>If {@code null} is provided</li>
+     *             <li>If {@code name} is not between 2-32 characters</li>
+     *             <li>If the file is not of the correct type</li>
+     *         </ul>
+     * @throws net.dv8tion.jda.api.exceptions.InsufficientPermissionException
+     *         If the currently logged in account does not have {@link Permission#CREATE_GUILD_EXPRESSIONS CREATE_GUILD_EXPRESSIONS} in the guild.
+     *
+     * @return {@link SoundboardSoundCreateAction}
+     */
+    @Nonnull
+    @CheckReturnValue
+    SoundboardSoundCreateAction createSoundboardSound(@Nonnull String name, @Nonnull FileUpload file);
+
+    /**
+     * Deletes a soundboard sound from the guild.
+     *
+     * <p>The returned {@link net.dv8tion.jda.api.requests.RestAction RestAction} can encounter the following Discord errors:
+     * <ul>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#UNKNOWN_SOUND UNKNOWN_SOUND}
+     *     <br>Occurs when the provided id does not refer to a soundboard sound known by Discord.</li>
+     *     <li>{@link ErrorResponse#MISSING_PERMISSIONS MISSING_PERMISSIONS}
+     *     <br>The sound cannot be deleted due to a permission discrepancy</li>
+     * </ul>
+     *
+     * @param  sound
+     *         The reference of the {@link SoundboardSound}.
+     *
+     * @throws IllegalStateException
+     *         If {@code null} is provided
+     * @throws net.dv8tion.jda.api.exceptions.InsufficientPermissionException
+     *         If the currently logged in account does not have {@link Permission#MANAGE_GUILD_EXPRESSIONS MANAGE_GUILD_EXPRESSIONS} in the guild.
+     * @throws net.dv8tion.jda.api.exceptions.DetachedEntityException
+     *         If this entity is {@link #isDetached() detached}
+     *
+     * @return {@link AuditableRestAction}
+     */
+    @Nonnull
+    @CheckReturnValue
+    AuditableRestAction<Void> deleteSoundboardSound(@Nonnull SoundboardSoundSnowflake sound);
 
     /**
      * Creates a new {@link ScheduledEvent}.
@@ -5585,6 +6004,51 @@ public interface Guild extends IGuildChannelContainer<GuildChannel>, ISnowflake,
     @CheckReturnValue
     ScheduledEventAction createScheduledEvent(
             @Nonnull String name, @Nonnull GuildChannel channel, @Nonnull OffsetDateTime startTime);
+
+    /**
+     * Searches for messages in this guild.
+     * The {@link GatewayIntent#MESSAGE_CONTENT MESSAGE_CONTENT} intent must be enabled in the <a href="https://discord.com/developers/applications" target="_blank">application dashboard</a>.
+     * <br>If all you need is to iterate messages of a channel, use {@link MessageChannel#getIterableHistory()} instead.
+     *
+     * <p>Any invalid entity referenced by the search query, will be ignored.
+     *
+     * <p><b>Note:</b> The search may return fewer results when messages have not been accessed for a long time.
+     *
+     * <p>Possible {@link net.dv8tion.jda.api.requests.ErrorResponse ErrorResponses} caused by
+     * the returned {@link RestAction} include the following:
+     * <ul>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#MISSING_ACCESS MISSING_ACCESS}
+     *     <br>You are missing the {@link GatewayIntent#MESSAGE_CONTENT MESSAGE_CONTENT} intent, or the search is filtered on a single channel which you don't have access to</li>
+     * </ul>
+     *
+     * <h4>Example - Finding {@code cat.png} attachments sent by users:</h4>
+     * {@snippet lang=java:
+     * guild.searchMessages()
+     *      .attachmentFilenames("cat.png")
+     *      .includeAuthorTypes(MessageSearchAction.AuthorType.USER)
+     *      .queue(response -> {
+     *          if (response.isNotReady()) {
+     *              int retryAfter = response.asNotReady().getRetryAfter();
+     *              // Reply
+     *              return;
+     *          }
+     *
+     *          var results = response.asResults();
+     *          var messages = results.getMessages();
+     *          // Handle messages
+     *      });
+     * }
+     *
+     * @throws InsufficientPermissionException
+     *         If the {@linkplain #getSelfMember() current member} does not have the {@link Permission#MESSAGE_HISTORY MESSAGE_HISTORY} permission
+     * @throws net.dv8tion.jda.api.exceptions.DetachedEntityException
+     *         If this entity is {@link #isDetached() detached}
+     *
+     * @return {@link MessageSearchAction}
+     */
+    @Nonnull
+    @CheckReturnValue
+    MessageSearchAction searchMessages();
 
     /**
      * Modifies the positional order of {@link net.dv8tion.jda.api.entities.Guild#getCategories() Guild.getCategories()}

@@ -218,6 +218,7 @@ public final class SequentialRestRateLimiter implements RestRateLimiter {
         });
     }
 
+    @SuppressWarnings("ReferenceEquality")
     private void scheduleElastic(Bucket bucket) {
         if (isShutdown) {
             return;
@@ -270,8 +271,8 @@ public final class SequentialRestRateLimiter implements RestRateLimiter {
         return System.currentTimeMillis();
     }
 
-    private Bucket updateBucket(Route.CompiledRoute route, Response response) {
-        return MiscUtil.locked(lock, () -> {
+    private void updateBucket(Route.CompiledRoute route, Response response) {
+        MiscUtil.locked(lock, () -> {
             try {
                 Bucket bucket = getBucket(route);
                 Headers headers = response.headers();
@@ -451,6 +452,7 @@ public final class SequentialRestRateLimiter implements RestRateLimiter {
             return requests;
         }
 
+        @SuppressWarnings("ReferenceEquality")
         protected boolean moveRequest(@Nonnull Work request) {
             return MiscUtil.locked(lock, () -> {
                 // Attempt moving request to correct bucket if it has been created
@@ -482,6 +484,7 @@ public final class SequentialRestRateLimiter implements RestRateLimiter {
             return false;
         }
 
+        @Override
         public void run() {
             log.trace("Bucket {} is running {} requests", bucketId, requests.size());
             while (!requests.isEmpty()) {

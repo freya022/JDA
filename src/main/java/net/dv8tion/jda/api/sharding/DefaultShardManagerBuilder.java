@@ -2284,8 +2284,10 @@ public class DefaultShardManagerBuilder {
         return this;
     }
 
+    @SuppressWarnings("ReferenceEquality")
     private void checkIntents() {
         boolean membersIntent = (intents & GatewayIntent.GUILD_MEMBERS.getRawValue()) != 0;
+        // Intentional comparison with reference equality to check if default is used
         if (!membersIntent && memberCachePolicy == MemberCachePolicy.ALL) {
             throw new IllegalStateException(
                     "Cannot use MemberCachePolicy.ALL without GatewayIntent.GUILD_MEMBERS enabled!");
@@ -2328,7 +2330,7 @@ public class DefaultShardManagerBuilder {
         private final boolean autoShutdown;
         private final T pool;
 
-        public ThreadPoolProviderImpl(T pool, boolean autoShutdown) {
+        private ThreadPoolProviderImpl(T pool, boolean autoShutdown) {
             this.autoShutdown = autoShutdown;
             this.pool = pool;
         }

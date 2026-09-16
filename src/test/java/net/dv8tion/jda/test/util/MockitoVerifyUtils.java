@@ -19,6 +19,8 @@ package net.dv8tion.jda.test.util;
 import org.intellij.lang.annotations.Language;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -43,6 +45,14 @@ public class MockitoVerifyUtils {
         return getMethodsByPattern(clazz, "^set.+$");
     }
 
+    @Nonnull
+    public static Set<String> getPublicMethods(@Nonnull Class<?> clazz) {
+        return Stream.of(clazz.getDeclaredMethods())
+                .filter(m -> Modifier.isPublic(m.getModifiers()))
+                .map(Method::getName)
+                .collect(Collectors.toSet());
+    }
+
     public static void assertInteractionsContainMethods(@Nonnull Object spy, @Nonnull Set<String> methodNames) {
         assertThat(methodNames).isNotEmpty();
 
@@ -55,5 +65,11 @@ public class MockitoVerifyUtils {
                         "Invocations on %s should include expected calls",
                         spy.getClass().getSimpleName())
                 .containsAll(methodNames);
+    }
+
+    public static List<String> getInteractions(@Nonnull Object spy) {
+        return mockingDetails(spy).getInvocations().stream()
+                .map(invocation -> invocation.getMethod().getName())
+                .toList();
     }
 }

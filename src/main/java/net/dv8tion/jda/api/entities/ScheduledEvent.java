@@ -23,6 +23,8 @@ import net.dv8tion.jda.api.managers.ScheduledEventManager;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 import net.dv8tion.jda.api.requests.restaction.pagination.PaginationAction;
 import net.dv8tion.jda.api.requests.restaction.pagination.ScheduledEventMembersPaginationAction;
+import net.dv8tion.jda.api.utils.DiscordAssets;
+import net.dv8tion.jda.api.utils.ImageFormat;
 import net.dv8tion.jda.api.utils.ImageProxy;
 
 import java.time.OffsetDateTime;
@@ -61,7 +63,10 @@ public interface ScheduledEvent extends ISnowflake, Comparable<ScheduledEvent> {
 
     /**
      * Template for {@link #getImageUrl()}
+     *
+     * @deprecated Replaced by {@link net.dv8tion.jda.api.utils.DiscordAssets#scheduledEventCoverImage(ImageFormat, String, String)}
      */
+    @Deprecated
     String IMAGE_URL = "https://cdn.discordapp.com/guild-events/%s/%s.%s";
 
     /**
@@ -81,13 +86,41 @@ public interface ScheduledEvent extends ISnowflake, Comparable<ScheduledEvent> {
     String getDescription();
 
     /**
+     * The ID of the cover image of the event.
+     *
+     * @return The cover image ID, or {@code null} if none is specified.
+     */
+    @Nullable
+    String getCoverImageId();
+
+    /**
      * The cover image url of the event.
-     * <p>Links to a potentially heavily compressed image. You can append a size parameter to the URL if needed. Example: {@code ?size=4096}
+     * <p>Links to a potentially heavily compressed image. You can append a {@code size} query parameter to the URL if needed.
      *
      * @return The image url, or {@code null} if none is specified
      */
     @Nullable
     String getImageUrl();
+
+    /**
+     * The cover image url of the event.
+     * <p>Links to a potentially heavily compressed image. You can append a {@code size} query parameter to the URL if needed.
+     *
+     * @param  format
+     *         The format in which the image should be
+     *
+     * @throws IllegalArgumentException
+     *         If the format is {@code null}
+     *
+     * @return The image url, or {@code null} if none is specified
+     *
+     * @see    DiscordAssets#scheduledEventCoverImage(ImageFormat, String, String)
+     */
+    @Nullable
+    default String getCoverImageUrl(@Nonnull ImageFormat format) {
+        ImageProxy proxy = getCoverImage(format);
+        return proxy == null ? null : proxy.getUrl();
+    }
 
     /**
      * Returns an {@link ImageProxy} for this events cover image.
@@ -100,6 +133,25 @@ public interface ScheduledEvent extends ISnowflake, Comparable<ScheduledEvent> {
     default ImageProxy getImage() {
         String imageUrl = getImageUrl();
         return imageUrl == null ? null : new ImageProxy(imageUrl);
+    }
+
+    /**
+     * Returns an {@link ImageProxy} for this events cover image.
+     *
+     * @param  format
+     *         The format in which the image should be
+     *
+     * @throws IllegalArgumentException
+     *         If the format is {@code null}
+     *
+     * @return The {@link ImageProxy} for this events cover image or null if no image is defined
+     *
+     * @see    #getCoverImageUrl(ImageFormat)
+     * @see    DiscordAssets#scheduledEventCoverImage(ImageFormat, String, String)
+     */
+    @Nullable
+    default ImageProxy getCoverImage(@Nonnull ImageFormat format) {
+        return DiscordAssets.scheduledEventCoverImage(format, getId(), getCoverImageId());
     }
 
     /**
@@ -219,7 +271,7 @@ public interface ScheduledEvent extends ISnowflake, Comparable<ScheduledEvent> {
      * <p>Possible ErrorResponses include:
      * <ul>
      *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#UNKNOWN_SCHEDULED_EVENT UNKNOWN_SCHEDULED_EVENT}
-     *     <br>If the the event was already deleted.</li>
+     *     <br>If the event was already deleted.</li>
      *
      *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#MISSING_PERMISSIONS MISSING_PERMISSIONS}
      *     <br>The send request was attempted after the account lost
@@ -230,7 +282,16 @@ public interface ScheduledEvent extends ISnowflake, Comparable<ScheduledEvent> {
      * </ul>
      *
      * @throws net.dv8tion.jda.api.exceptions.InsufficientPermissionException
-     *         If we don't have the permission to {@link net.dv8tion.jda.api.Permission#MANAGE_EVENTS MANAGE_EVENTS}
+     *         <ul>
+     *             <li>If the currently logged in account created the event,
+     *                 and does not have {@link net.dv8tion.jda.api.Permission#MANAGE_EVENTS Permission.MANAGE_EVENTS}
+     *                 nor {@link net.dv8tion.jda.api.Permission#CREATE_SCHEDULED_EVENTS Permission.CREATE_SCHEDULED_EVENTS}
+     *             </li>
+     *             <li>
+     *                 If the currently logged in account did not create the event,
+     *                 and does not have {@link net.dv8tion.jda.api.Permission#MANAGE_EVENTS Permission.MANAGE_EVENTS}
+     *             </li>
+     *         </ul>
      *
      * @return {@link AuditableRestAction}
      */
@@ -297,7 +358,16 @@ public interface ScheduledEvent extends ISnowflake, Comparable<ScheduledEvent> {
      * <br>You can modify multiple fields in one request by chaining setters before calling {@link net.dv8tion.jda.api.requests.RestAction#queue() RestAction.queue()}.
      *
      * @throws net.dv8tion.jda.api.exceptions.InsufficientPermissionException
-     *         If the currently logged in account does not have {@link net.dv8tion.jda.api.Permission#MANAGE_EVENTS Permission.MANAGE_EVENTS}
+     *         <ul>
+     *             <li>If the currently logged in account created the event,
+     *                 and does not have {@link net.dv8tion.jda.api.Permission#MANAGE_EVENTS Permission.MANAGE_EVENTS}
+     *                 nor {@link net.dv8tion.jda.api.Permission#CREATE_SCHEDULED_EVENTS Permission.CREATE_SCHEDULED_EVENTS}
+     *             </li>
+     *             <li>
+     *                 If the currently logged in account did not create the event,
+     *                 and does not have {@link net.dv8tion.jda.api.Permission#MANAGE_EVENTS Permission.MANAGE_EVENTS}
+     *             </li>
+     *         </ul>
      *
      * @return The ScheduledEventManager of this event
      */
