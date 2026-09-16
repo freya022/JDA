@@ -29,7 +29,6 @@ import javax.annotation.Nullable;
 
 public class ZlibTransportGatewayStreamedDecompressor extends AbstractZlibTransportGatewayDecompressor
         implements GatewayDecompressor.Transport.Streamed {
-    private final Inflater inflater = new Inflater();
 
     @Nullable
     @Override
@@ -67,7 +66,7 @@ public class ZlibTransportGatewayStreamedDecompressor extends AbstractZlibTransp
         }
 
         @Override
-        public int read(byte[] b, int off, int len) throws IOException {
+        public int read(@Nonnull byte[] b, int off, int len) throws IOException {
             if (closed) {
                 throw new IOException("Stream is closed");
             }

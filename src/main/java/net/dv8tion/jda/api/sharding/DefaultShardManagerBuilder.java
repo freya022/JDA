@@ -33,7 +33,6 @@ import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.RestConfig;
 import net.dv8tion.jda.api.requests.gateway.GatewayConfig;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
-import net.dv8tion.jda.api.utils.Compression;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.SessionController;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
@@ -74,7 +73,7 @@ public class DefaultShardManagerBuilder {
     protected EnumSet<ShardingConfigFlag> shardingFlags = ShardingConfigFlag.getDefault();
 
     @SuppressWarnings("deprecation")
-    protected Compression compression = Compression.ZLIB;
+    protected net.dv8tion.jda.api.utils.Compression compression = net.dv8tion.jda.api.utils.Compression.ZLIB;
 
     protected GatewayEncoding encoding = GatewayEncoding.JSON;
     protected int shardsTotal = -1;
@@ -832,7 +831,7 @@ public class DefaultShardManagerBuilder {
      */
     @Nonnull
     @Deprecated
-    public DefaultShardManagerBuilder setCompression(@Nonnull Compression compression) {
+    public DefaultShardManagerBuilder setCompression(@Nonnull net.dv8tion.jda.api.utils.Compression compression) {
         Checks.notNull(compression, "Compression");
         this.compression = compression;
         return this;
@@ -842,7 +841,7 @@ public class DefaultShardManagerBuilder {
      * Configures several gateway parameters with the provided configuration.
      * <br>This can be used to configure compression and encoding.
      *
-     * <p>When set, this overrides all values set by {@link #setCompression(Compression)},
+     * <p>When set, this overrides all values set by {@link #setCompression(net.dv8tion.jda.api.utils.Compression)},
      * {@link #setMaxBufferSize(int)} and {@link #setGatewayEncoding(GatewayEncoding)}.
      *
      * @param  gatewayConfig
@@ -864,7 +863,7 @@ public class DefaultShardManagerBuilder {
      * Configures several gateway parameters with the provided per-shard configurations.
      * <br>This can be used to configure compression and encoding.
      *
-     * <p>When set, this overrides all values set by {@link #setCompression(Compression)},
+     * <p>When set, this overrides all values set by {@link #setCompression(net.dv8tion.jda.api.utils.Compression)},
      * {@link #setMaxBufferSize(int)} and {@link #setGatewayEncoding(GatewayEncoding)}.
      *
      * @param  provider
