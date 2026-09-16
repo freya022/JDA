@@ -68,6 +68,10 @@ public class DiscordAssetsTest extends AbstractSnapshotTest {
                 memberAvatar(EXAMPLE_FORMAT, EXAMPLE_SNOWFLAKE, EXAMPLE_SNOWFLAKE, EXAMPLE_HASH)
                         .getUrl());
         data.put(
+                "memberBanner",
+                memberBanner(EXAMPLE_FORMAT, EXAMPLE_SNOWFLAKE, EXAMPLE_SNOWFLAKE, EXAMPLE_HASH)
+                        .getUrl());
+        data.put(
                 "roleIcon",
                 roleIcon(EXAMPLE_FORMAT, EXAMPLE_SNOWFLAKE, EXAMPLE_HASH).getUrl());
         data.put(

@@ -193,6 +193,7 @@ public abstract class AbstractEntityBuilder {
     protected void configureMember(DataObject memberJson, MemberMixin<?> member) {
         member.setNickname(memberJson.getString("nick", null));
         member.setAvatarId(memberJson.getString("avatar", null));
+        member.setBannerId(memberJson.getString("banner", null));
         AvatarDecoration avatarDecoration = memberJson
                 .optObject("avatar_decoration_data")
                 .map(AvatarDecoration::new)

@@ -26,6 +26,8 @@ public interface MemberMixin<T extends MemberMixin<T>> extends Member, IDetachab
 
     T setAvatarId(String avatarId);
 
+    T setBannerId(String bannerId);
+
     T setAvatarDecoration(AvatarDecoration avatarDecoration);
 
     T setJoinDate(long joinDate);
