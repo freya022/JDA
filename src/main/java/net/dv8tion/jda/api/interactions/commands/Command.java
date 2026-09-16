@@ -793,6 +793,7 @@ public interface Command extends ISnowflake, ICommandReference {
          * @return Immutable list of file types accepted by this option
          */
         @Nonnull
+        @ReadOnly
         @Unmodifiable
         public List<FileType> getFileTypes() {
             // No need for an extra copy

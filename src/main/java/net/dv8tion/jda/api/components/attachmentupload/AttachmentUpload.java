@@ -16,6 +16,7 @@
 
 package net.dv8tion.jda.api.components.attachmentupload;
 
+import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.components.Component;
 import net.dv8tion.jda.api.components.attribute.ICustomId;
 import net.dv8tion.jda.api.components.label.LabelChildComponent;
@@ -107,6 +108,7 @@ public interface AttachmentUpload extends Component, ICustomId, LabelChildCompon
      * @return Unmodifiable list view of file types
      */
     @Nonnull
+    @ReadOnly
     @UnmodifiableView
     List<FileType> getFileTypes();
 
@@ -304,6 +306,7 @@ public interface AttachmentUpload extends Component, ICustomId, LabelChildCompon
          * @return Unmodifiable list view of file types
          */
         @Nonnull
+        @ReadOnly
         @UnmodifiableView
         public List<FileType> getFileTypes() {
             return fileTypes.asView();

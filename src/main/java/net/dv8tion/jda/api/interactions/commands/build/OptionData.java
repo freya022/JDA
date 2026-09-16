@@ -346,6 +346,7 @@ public class OptionData implements SerializableData, IFilterableFileTypes<Option
      * @return Unmodifiable list view of file types
      */
     @Nonnull
+    @ReadOnly
     @UnmodifiableView
     public List<FileType> getFileTypes() {
         return fileTypes.asView();
