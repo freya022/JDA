@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.interactions.commands.build;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
@@ -346,7 +345,6 @@ public class OptionData implements SerializableData, IFilterableFileTypes<Option
      * @return Unmodifiable list view of file types
      */
     @Nonnull
-    @ReadOnly
     @UnmodifiableView
     public List<FileType> getFileTypes() {
         return fileTypes.asView();
@@ -362,7 +360,6 @@ public class OptionData implements SerializableData, IFilterableFileTypes<Option
      * @see #addChoice(String, String)
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     public List<Command.Choice> getChoices() {
         if (choices == null || choices.isEmpty()) {

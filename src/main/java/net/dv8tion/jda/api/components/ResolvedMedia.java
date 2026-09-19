@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.components;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.entities.ThumbHashPlaceholder;
 import net.dv8tion.jda.api.utils.AttachmentProxy;
 import net.dv8tion.jda.internal.utils.Checks;
@@ -147,7 +146,6 @@ public interface ResolvedMedia {
      * @see    ResolvedMediaFlag
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     Set<ResolvedMediaFlag> getFlags();
 

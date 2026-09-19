@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.entities;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.entities.channel.concrete.StageChannel;
 import net.dv8tion.jda.api.managers.StageInstanceManager;
 import net.dv8tion.jda.api.requests.RestAction;
@@ -79,7 +78,6 @@ public interface StageInstance extends ISnowflake {
      * @return Immutable {@link List} of {@link Member Members} which can speak in this stage instance
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<Member> getSpeakers() {
         return getChannel().getMembers().stream()
@@ -102,7 +100,6 @@ public interface StageInstance extends ISnowflake {
      * @return Immutable {@link List} of {@link Member Members} which cannot speak in this stage instance
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<Member> getAudience() {
         return getChannel().getMembers().stream()

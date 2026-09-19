@@ -18,7 +18,6 @@ package net.dv8tion.jda.api.entities;
 
 import com.google.errorprone.annotations.FormatMethod;
 import com.google.errorprone.annotations.FormatString;
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.components.Component;
@@ -479,7 +478,6 @@ public interface Message extends ISnowflake, Formattable {
      * @return Immutable list of invite codes
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<String> getInvites();
 
@@ -680,7 +678,6 @@ public interface Message extends ISnowflake, Formattable {
      * @return Immutable list of {@link net.dv8tion.jda.api.entities.Message.Attachment Attachments}.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<Attachment> getAttachments();
 
@@ -692,7 +689,6 @@ public interface Message extends ISnowflake, Formattable {
      * @return Immutable list of all given MessageEmbeds.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<MessageEmbed> getEmbeds();
 
@@ -705,7 +701,6 @@ public interface Message extends ISnowflake, Formattable {
      * @return Immutable {@link List} of {@link MessageTopLevelComponent}
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<MessageTopLevelComponentUnion> getComponents();
 
@@ -777,7 +772,6 @@ public interface Message extends ISnowflake, Formattable {
      * @see    MessageReaction
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<MessageReaction> getReactions();
 
@@ -788,7 +782,6 @@ public interface Message extends ISnowflake, Formattable {
      * @return Immutable list of all StickerItems in this message.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<StickerItem> getStickers();
 
@@ -802,7 +795,6 @@ public interface Message extends ISnowflake, Formattable {
      * @return Immutable {@link List} of {@link MessageSnapshot}
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<MessageSnapshot> getMessageSnapshots();
 

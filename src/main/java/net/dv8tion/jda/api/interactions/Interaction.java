@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.interactions;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.Channel;
@@ -248,7 +247,6 @@ public interface Interaction extends ISnowflake {
      * @return The {@link List List} of {@link Entitlement Entitlement}
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<Entitlement> getEntitlements();
 

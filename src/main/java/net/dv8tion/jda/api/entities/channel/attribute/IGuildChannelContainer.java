@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.entities.channel.attribute;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.Channel;
@@ -317,7 +316,6 @@ public interface IGuildChannelContainer<C extends Channel> {
      * @return Possibly-empty immutable list of all StageChannel names that match the provided name.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<StageChannel> getStageChannelsByName(@Nonnull String name, boolean ignoreCase) {
         return getStageChannelCache().getElementsByName(name, ignoreCase);
@@ -395,7 +393,6 @@ public interface IGuildChannelContainer<C extends Channel> {
      * @return An immutable List of {@link StageChannel StageChannels}.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<StageChannel> getStageChannels() {
         return getStageChannelCache().asList();
@@ -448,7 +445,6 @@ public interface IGuildChannelContainer<C extends Channel> {
      * @return Possibly-empty immutable list of all ThreadChannel names that match the provided name.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<ThreadChannel> getThreadChannelsByName(@Nonnull String name, boolean ignoreCase) {
         return getThreadChannelCache().getElementsByName(name, ignoreCase);
@@ -531,7 +527,6 @@ public interface IGuildChannelContainer<C extends Channel> {
      * @return An immutable List of {@link ThreadChannel ThreadChannels}.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<ThreadChannel> getThreadChannels() {
         return getThreadChannelCache().asList();
@@ -583,7 +578,6 @@ public interface IGuildChannelContainer<C extends Channel> {
      * @return Immutable list of all categories matching the provided name
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<Category> getCategoriesByName(@Nonnull String name, boolean ignoreCase) {
         return getCategoryCache().getElementsByName(name, ignoreCase);
@@ -661,7 +655,6 @@ public interface IGuildChannelContainer<C extends Channel> {
      * @return An immutable list of all {@link Category Categories} in this Guild.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<Category> getCategories() {
         return getCategoryCache().asList();
@@ -711,7 +704,6 @@ public interface IGuildChannelContainer<C extends Channel> {
      * @return Possibly-empty immutable list of all TextChannels names that match the provided name.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<TextChannel> getTextChannelsByName(@Nonnull String name, boolean ignoreCase) {
         return getTextChannelCache().getElementsByName(name, ignoreCase);
@@ -789,7 +781,6 @@ public interface IGuildChannelContainer<C extends Channel> {
      * @return An immutable List of all {@link TextChannel TextChannels} in this Guild.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<TextChannel> getTextChannels() {
         return getTextChannelCache().asList();
@@ -839,7 +830,6 @@ public interface IGuildChannelContainer<C extends Channel> {
      * @return Possibly-empty immutable list of all NewsChannels names that match the provided name.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<NewsChannel> getNewsChannelsByName(@Nonnull String name, boolean ignoreCase) {
         return getNewsChannelCache().getElementsByName(name, ignoreCase);
@@ -917,7 +907,6 @@ public interface IGuildChannelContainer<C extends Channel> {
      * @return An immutable List of all {@link NewsChannel NewsChannels} in this Guild.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<NewsChannel> getNewsChannels() {
         return getNewsChannelCache().asList();
@@ -967,7 +956,6 @@ public interface IGuildChannelContainer<C extends Channel> {
      * @return Possibly-empty immutable list of all VoiceChannel names that match the provided name.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<VoiceChannel> getVoiceChannelsByName(@Nonnull String name, boolean ignoreCase) {
         return getVoiceChannelCache().getElementsByName(name, ignoreCase);
@@ -1045,7 +1033,6 @@ public interface IGuildChannelContainer<C extends Channel> {
      * @return An immutable List of {@link VoiceChannel VoiceChannels}.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<VoiceChannel> getVoiceChannels() {
         return getVoiceChannelCache().asList();
@@ -1094,7 +1081,6 @@ public interface IGuildChannelContainer<C extends Channel> {
      * @return Possibly-empty immutable list of all ForumChannel names that match the provided name.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<ForumChannel> getForumChannelsByName(@Nonnull String name, boolean ignoreCase) {
         return getForumChannelCache().getElementsByName(name, ignoreCase);
@@ -1171,7 +1157,6 @@ public interface IGuildChannelContainer<C extends Channel> {
      * @return An immutable List of {@link ForumChannel}.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<ForumChannel> getForumChannels() {
         return getForumChannelCache().asList();
@@ -1220,7 +1205,6 @@ public interface IGuildChannelContainer<C extends Channel> {
      * @return Possibly-empty immutable list of all ForumChannel names that match the provided name.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<MediaChannel> getMediaChannelsByName(@Nonnull String name, boolean ignoreCase) {
         return getMediaChannelCache().getElementsByName(name, ignoreCase);
@@ -1297,7 +1281,6 @@ public interface IGuildChannelContainer<C extends Channel> {
      * @return An immutable List of {@link MediaChannel}.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<MediaChannel> getMediaChannels() {
         return getMediaChannelCache().asList();

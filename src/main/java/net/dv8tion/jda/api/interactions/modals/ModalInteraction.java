@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.interactions.modals;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.unions.GuildMessageChannelUnion;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
@@ -67,7 +66,6 @@ public interface ModalInteraction extends IReplyCallback, IMessageEditCallback, 
      * @see    #getValue(String)
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<ModalMapping> getValues();
 

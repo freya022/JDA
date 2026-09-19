@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.entities;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.utils.MiscUtil;
 import net.dv8tion.jda.internal.utils.Checks;
 import org.jetbrains.annotations.Unmodifiable;
@@ -123,7 +122,6 @@ public interface RoleMemberCounts {
      * @return An unmodifiable list of role member counts
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<RoleMemberCount> asList();
 }

@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.events.guild.update;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import org.jetbrains.annotations.Unmodifiable;
@@ -46,7 +45,6 @@ public class GuildUpdateFeaturesEvent extends GenericGuildUpdateEvent<Set<String
      * @return Never-null, unmodifiable Set of the old features
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     public Set<String> getOldFeatures() {
         return getOldValue();
@@ -58,7 +56,6 @@ public class GuildUpdateFeaturesEvent extends GenericGuildUpdateEvent<Set<String
      * @return Never-null, unmodifiable Set of the new features
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     public Set<String> getNewFeatures() {
         return getNewValue();
@@ -66,7 +63,6 @@ public class GuildUpdateFeaturesEvent extends GenericGuildUpdateEvent<Set<String
 
     @Nonnull
     @Override
-    @ReadOnly
     @Unmodifiable
     public Set<String> getOldValue() {
         return super.getOldValue();
@@ -74,7 +70,6 @@ public class GuildUpdateFeaturesEvent extends GenericGuildUpdateEvent<Set<String
 
     @Nonnull
     @Override
-    @ReadOnly
     @Unmodifiable
     public Set<String> getNewValue() {
         return super.getNewValue();

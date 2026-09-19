@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.entities;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.utils.DiscordAssets;
 import net.dv8tion.jda.api.utils.ImageFormat;
 import net.dv8tion.jda.api.utils.ImageProxy;
@@ -149,7 +148,6 @@ public interface ApplicationTeam extends ISnowflake {
      * @return Immutable list of team members
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<TeamMember> getMembers();
 

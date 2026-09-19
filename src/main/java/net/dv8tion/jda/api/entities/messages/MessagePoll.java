@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.entities.messages;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.entities.emoji.EmojiUnion;
@@ -72,7 +71,6 @@ public interface MessagePoll {
      * @return Immutable {@link List} of {@link Answer}
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<Answer> getAnswers();
 

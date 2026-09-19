@@ -17,7 +17,6 @@
 package net.dv8tion.jda.api.entities;
 
 import kotlin.annotations.jvm.Mutable;
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild.VerificationLevel;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
@@ -683,7 +682,6 @@ public interface Invite {
          * @return Never-null, unmodifiable Set containing all of the Guild's features.
          */
         @Nonnull
-        @ReadOnly
         @Unmodifiable
         Set<String> getFeatures();
 

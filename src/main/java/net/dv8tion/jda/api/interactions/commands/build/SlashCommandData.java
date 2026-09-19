@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.interactions.commands.build;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.IntegrationType;
@@ -266,7 +265,6 @@ public interface SlashCommandData extends CommandData {
      * @return Immutable list of {@link SubcommandData}
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<SubcommandData> getSubcommands();
 
@@ -276,7 +274,6 @@ public interface SlashCommandData extends CommandData {
      * @return Immutable list of {@link SubcommandGroupData}
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<SubcommandGroupData> getSubcommandGroups();
 
@@ -286,7 +283,6 @@ public interface SlashCommandData extends CommandData {
      * @return Immutable list of {@link OptionData}
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<OptionData> getOptions();
 

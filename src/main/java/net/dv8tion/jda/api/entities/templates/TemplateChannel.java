@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.entities.templates;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
@@ -227,7 +226,6 @@ public class TemplateChannel implements ISnowflake {
      *         for this {@link net.dv8tion.jda.api.entities.templates.TemplateChannel TemplateChannel}.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     public List<TemplateChannel.PermissionOverride> getPermissionOverrides() {
         return this.permissionOverrides;

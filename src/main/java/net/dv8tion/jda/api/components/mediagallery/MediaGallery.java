@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.components.mediagallery;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.components.Component;
 import net.dv8tion.jda.api.components.MessageTopLevelComponent;
 import net.dv8tion.jda.api.components.container.ContainerChildComponent;
@@ -134,7 +133,6 @@ public interface MediaGallery extends Component, MessageTopLevelComponent, Conta
      * @return {@link List} of {@link MediaGalleryItem} in this media gallery
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<MediaGalleryItem> getItems();
 }

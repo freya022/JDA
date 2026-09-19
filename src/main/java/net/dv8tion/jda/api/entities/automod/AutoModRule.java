@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.entities.automod;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.entities.Role;
@@ -145,7 +144,6 @@ public interface AutoModRule extends ISnowflake {
      * @return The exempt roles
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<Role> getExemptRoles();
 
@@ -156,7 +154,6 @@ public interface AutoModRule extends ISnowflake {
      * @return The exempt channels
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<GuildChannel> getExemptChannels();
 
@@ -166,7 +163,6 @@ public interface AutoModRule extends ISnowflake {
      * @return The {@link AutoModResponse AutoModResponses}
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<AutoModResponse> getActions();
 
@@ -177,7 +173,6 @@ public interface AutoModRule extends ISnowflake {
      * @return The blocked keywords
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<String> getFilteredKeywords();
 
@@ -188,7 +183,6 @@ public interface AutoModRule extends ISnowflake {
      * @return The blocked regex patterns
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<String> getFilteredRegex();
 
@@ -208,7 +202,6 @@ public interface AutoModRule extends ISnowflake {
      * @return The whitelisted keywords
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<String> getAllowlist();
 

@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.entities;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.annotations.ReplaceWith;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.channel.concrete.GroupChannel;
@@ -62,7 +61,6 @@ public interface Mentions {
      * @return Immutable list of mentioned users
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<User> getUsers();
 
@@ -143,7 +141,6 @@ public interface Mentions {
      * @return Immutable list of mentioned GuildChannels
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<GuildChannel> getChannels();
 
@@ -237,7 +234,6 @@ public interface Mentions {
      * @return Immutable list of mentioned GuildChannels that are of type {@code clazz}.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     <T extends GuildChannel> List<T> getChannels(@Nonnull Class<T> clazz);
 
@@ -327,7 +323,6 @@ public interface Mentions {
      * @return immutable list of mentioned Roles
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<Role> getRoles();
 
@@ -407,7 +402,6 @@ public interface Mentions {
      * @return An immutable list of the Custom Emojis used (example match {@literal <:jda:230988580904763393>})
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<CustomEmoji> getCustomEmojis();
 
@@ -481,7 +475,6 @@ public interface Mentions {
      * @return Immutable list of mentioned Members, or an empty list
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<Member> getMembers();
 
@@ -558,7 +551,6 @@ public interface Mentions {
      * @return Immutable list of mentioned slash commands, or an empty list
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<SlashCommandReference> getSlashCommands();
 
@@ -643,7 +635,6 @@ public interface Mentions {
      * @return Immutable list of filtered {@link net.dv8tion.jda.api.entities.IMentionable IMentionable} instances
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<IMentionable> getMentions(@Nonnull Message.MentionType... types);
 

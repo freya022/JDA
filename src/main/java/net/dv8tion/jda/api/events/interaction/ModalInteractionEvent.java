@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.events.interaction;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
@@ -65,7 +64,6 @@ public class ModalInteractionEvent extends GenericInteractionCreateEvent impleme
 
     @Nonnull
     @Override
-    @ReadOnly
     @Unmodifiable
     public List<ModalMapping> getValues() {
         return interaction.getValues();

@@ -17,7 +17,6 @@
 package net.dv8tion.jda.api.interactions.commands;
 
 import kotlin.annotations.jvm.Mutable;
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.SelfUser;
@@ -78,7 +77,6 @@ public class PrivilegeConfig {
      * @return Immutable List containing all IntegrationPrivileges that have been applied to this application in this guild.
      */
     @Nullable
-    @ReadOnly
     @Unmodifiable
     public List<IntegrationPrivilege> getApplicationPrivileges() {
         return getCommandPrivileges(getJDA().getSelfUser().getApplicationId());
@@ -100,7 +98,6 @@ public class PrivilegeConfig {
      * @return Immutable List containing all IntegrationPrivileges that have been applied to the command with the given id in this guild.
      */
     @Nullable
-    @ReadOnly
     @Unmodifiable
     public List<IntegrationPrivilege> getCommandPrivileges(@Nonnull String id) {
         Checks.notNull(id, "Id");
@@ -123,7 +120,6 @@ public class PrivilegeConfig {
      * @return Immutable List containing all IntegrationPrivileges that have been applied to the command in this guild.
      */
     @Nullable
-    @ReadOnly
     @Unmodifiable
     public List<IntegrationPrivilege> getCommandPrivileges(@Nonnull Command command) {
         Checks.notNull(command, "Command");

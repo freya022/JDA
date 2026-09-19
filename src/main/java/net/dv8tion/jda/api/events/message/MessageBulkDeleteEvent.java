@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.events.message;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
@@ -83,7 +82,6 @@ public class MessageBulkDeleteEvent extends Event {
      * @return The list of message ids
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     public List<String> getMessageIds() {
         return messageIds;

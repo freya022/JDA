@@ -17,7 +17,6 @@
 package net.dv8tion.jda.api.exceptions;
 
 import kotlin.annotations.jvm.Mutable;
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.requests.Response;
 import net.dv8tion.jda.api.requests.RestAction;
@@ -146,7 +145,6 @@ public class ErrorResponseException extends RuntimeException {
      * @return Possibly-empty list of {@link SchemaError SchemaError}
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     public List<SchemaError> getSchemaErrors() {
         return schemaErrors;

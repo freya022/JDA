@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.entities.channel.attribute;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.entities.MessageType;
 import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
@@ -61,7 +60,6 @@ public interface IThreadContainer extends GuildChannel, IPermissionContainer {
      * @return Immutable list of all ThreadChannel children.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<ThreadChannel> getThreadChannels() {
         return getGuild().getThreadChannelCache().applyStream(stream -> stream.filter(

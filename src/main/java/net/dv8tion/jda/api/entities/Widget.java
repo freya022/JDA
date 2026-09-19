@@ -17,7 +17,6 @@
 package net.dv8tion.jda.api.entities;
 
 import kotlin.annotations.jvm.Mutable;
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.utils.DiscordAssets;
 import net.dv8tion.jda.api.utils.ImageFormat;
@@ -78,7 +77,6 @@ public interface Widget extends ISnowflake {
      * @return the list of voice channels in the guild
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<VoiceChannel> getVoiceChannels();
 
@@ -121,7 +119,6 @@ public interface Widget extends ISnowflake {
      * @return the list of members
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<Member> getMembers();
 

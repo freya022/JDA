@@ -17,7 +17,6 @@
 package net.dv8tion.jda.api.components.selections;
 
 import kotlin.annotations.jvm.Mutable;
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.components.ActionComponent;
 import net.dv8tion.jda.api.components.actionrow.ActionRow;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
@@ -97,7 +96,6 @@ public interface StringSelectMenu extends SelectMenu {
      * @see    Builder#getOptions()
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<SelectOption> getOptions();
 

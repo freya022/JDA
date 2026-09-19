@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.interactions.components.selections;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.components.replacer.ComponentReplacer;
 import net.dv8tion.jda.api.components.selections.SelectMenu;
 import net.dv8tion.jda.api.components.tree.MessageComponentTree;
@@ -68,7 +67,6 @@ public interface SelectMenuInteraction<T, S extends SelectMenu> extends Componen
      * @return {@link List} of {@link T}
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<T> getValues();
 

@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.interactions.commands.build;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.IntegrationType;
 import net.dv8tion.jda.api.interactions.InteractionContextType;
@@ -270,7 +269,6 @@ public interface CommandData extends SerializableData {
      * @return The contexts in which this command can be used
      */
     @Nonnull
-    @ReadOnly
     @UnmodifiableView
     Set<InteractionContextType> getContexts();
 
@@ -280,7 +278,6 @@ public interface CommandData extends SerializableData {
      * @return The integration types on which this command can be installed on
      */
     @Nonnull
-    @ReadOnly
     @UnmodifiableView
     Set<IntegrationType> getIntegrationTypes();
 

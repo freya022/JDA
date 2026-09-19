@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.sharding;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDA.Status;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -301,7 +300,6 @@ public interface ShardManager extends IGuildChannelContainer<Channel> {
      * @return An immutable list of custom emojis (which may or may not be available to usage).
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<RichCustomEmoji> getEmojis() {
         return this.getEmojiCache().asList();
@@ -324,7 +322,6 @@ public interface ShardManager extends IGuildChannelContainer<Channel> {
      *         name as the provided name.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<RichCustomEmoji> getEmojisByName(@Nonnull String name, boolean ignoreCase) {
         return this.getEmojiCache().getElementsByName(name, ignoreCase);
@@ -370,7 +367,6 @@ public interface ShardManager extends IGuildChannelContainer<Channel> {
      * @return Possibly-empty list of all the {@link net.dv8tion.jda.api.entities.Guild Guilds} that all have the same name as the provided name.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<Guild> getGuildsByName(@Nonnull String name, boolean ignoreCase) {
         return this.getGuildCache().getElementsByName(name, ignoreCase);
@@ -400,7 +396,6 @@ public interface ShardManager extends IGuildChannelContainer<Channel> {
      * @return Possibly-empty list of all the {@link net.dv8tion.jda.api.entities.Guild Guilds} that this account is connected to.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<Guild> getGuilds() {
         return this.getGuildCache().asList();
@@ -415,7 +410,6 @@ public interface ShardManager extends IGuildChannelContainer<Channel> {
      * @return Unmodifiable list of all {@link net.dv8tion.jda.api.entities.Guild Guild} instances which have all {@link net.dv8tion.jda.api.entities.UserSnowflake Users} in them.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<Guild> getMutualGuilds(@Nonnull Collection<? extends UserSnowflake> users) {
         Checks.noneNull(users, "users");
@@ -433,7 +427,6 @@ public interface ShardManager extends IGuildChannelContainer<Channel> {
      * @return Unmodifiable list of all {@link net.dv8tion.jda.api.entities.Guild Guild} instances which have all {@link net.dv8tion.jda.api.entities.UserSnowflake Users} in them.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<Guild> getMutualGuilds(@Nonnull UserSnowflake... users) {
         Checks.notNull(users, "users");
@@ -584,7 +577,6 @@ public interface ShardManager extends IGuildChannelContainer<Channel> {
      * @return Possibly-empty list of all {@link net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel PrivateChannels}.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<PrivateChannel> getPrivateChannels() {
         return this.getPrivateChannelCache().asList();
@@ -647,7 +639,6 @@ public interface ShardManager extends IGuildChannelContainer<Channel> {
      * @return Immutable List of all visible Roles
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<Role> getRoles() {
         return this.getRoleCache().asList();
@@ -666,7 +657,6 @@ public interface ShardManager extends IGuildChannelContainer<Channel> {
      * @return Immutable List of all Roles matching the parameters provided.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<Role> getRolesByName(@Nonnull String name, boolean ignoreCase) {
         return this.getRoleCache().getElementsByName(name, ignoreCase);
@@ -843,7 +833,6 @@ public interface ShardManager extends IGuildChannelContainer<Channel> {
      * @return An immutable list of all managed {@link net.dv8tion.jda.api.JDA JDA} instances.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<JDA> getShards() {
         return this.getShardCache().asList();
@@ -871,7 +860,6 @@ public interface ShardManager extends IGuildChannelContainer<Channel> {
      * @return All current shard statuses.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default Map<JDA, Status> getStatuses() {
         return Collections.unmodifiableMap(
@@ -934,7 +922,6 @@ public interface ShardManager extends IGuildChannelContainer<Channel> {
      * @return List of all {@link net.dv8tion.jda.api.entities.User Users} that are visible to JDA.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     default List<User> getUsers() {
         return this.getUserCache().asList();

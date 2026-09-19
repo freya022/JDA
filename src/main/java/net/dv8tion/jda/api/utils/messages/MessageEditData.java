@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.utils.messages;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.components.MessageTopLevelComponentUnion;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -234,7 +233,6 @@ public class MessageEditData implements MessageData, AutoCloseable, Serializable
      * @return The embeds or an empty list if none were set
      */
     @Override
-    @ReadOnly
     @Nonnull
     @Unmodifiable
     public List<MessageEmbed> getEmbeds() {
@@ -247,7 +245,6 @@ public class MessageEditData implements MessageData, AutoCloseable, Serializable
      * @return The components or an empty list if none were set
      */
     @Override
-    @ReadOnly
     @Nonnull
     @Unmodifiable
     public List<MessageTopLevelComponentUnion> getComponents() {
@@ -265,7 +262,6 @@ public class MessageEditData implements MessageData, AutoCloseable, Serializable
      * @return The list of attachments, or an empty list if none were set
      */
     @Override
-    @ReadOnly
     @Nonnull
     @Unmodifiable
     public List<AttachedFile> getAttachments() {
@@ -283,7 +279,6 @@ public class MessageEditData implements MessageData, AutoCloseable, Serializable
      * @return The user IDs which are mention whitelisted
      */
     @Override
-    @ReadOnly
     @Nonnull
     @Unmodifiable
     public Set<String> getMentionedUsers() {
@@ -296,7 +291,6 @@ public class MessageEditData implements MessageData, AutoCloseable, Serializable
      * @return The role IDs which are mention whitelisted
      */
     @Override
-    @ReadOnly
     @Nonnull
     @Unmodifiable
     public Set<String> getMentionedRoles() {
@@ -358,7 +352,6 @@ public class MessageEditData implements MessageData, AutoCloseable, Serializable
      * @return The list of file uploads
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     public synchronized List<FileUpload> getFiles() {
         return files.stream()
@@ -375,14 +368,12 @@ public class MessageEditData implements MessageData, AutoCloseable, Serializable
      * @return The set of all file uploads
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     public Set<? extends AttachedFile> getAllDistinctFiles() {
         return allDistinctFiles;
     }
 
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     public static Set<AttachedFile> createAllDistinctFiles(
             @Nullable Collection<AttachedFile> files, @Nonnull Collection<MessageTopLevelComponentUnion> components) {

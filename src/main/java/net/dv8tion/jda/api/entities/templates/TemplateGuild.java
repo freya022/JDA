@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.entities.templates;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.entities.Guild.ExplicitContentLevel;
 import net.dv8tion.jda.api.entities.Guild.NotificationLevel;
 import net.dv8tion.jda.api.entities.Guild.Timeout;
@@ -266,7 +265,6 @@ public class TemplateGuild implements ISnowflake {
      * @return An immutable List of {@link net.dv8tion.jda.api.entities.templates.TemplateRole Roles}.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     public List<TemplateRole> getRoles() {
         return this.roles;
@@ -278,7 +276,6 @@ public class TemplateGuild implements ISnowflake {
      * @return An immutable List of {@link net.dv8tion.jda.api.entities.templates.TemplateChannel Channels}.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     public List<TemplateChannel> getChannels() {
         return this.channels;

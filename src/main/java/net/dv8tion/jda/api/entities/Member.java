@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.entities;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.annotations.Incubating;
 import net.dv8tion.jda.annotations.ReplaceWith;
 import net.dv8tion.jda.api.JDA;
@@ -197,7 +196,6 @@ public interface Member extends IMentionable, IPermissionHolder, IDetachableEnti
      * @return Immutable list of {@link Activity Activities} for the user
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<Activity> getActivities();
 
@@ -518,7 +516,6 @@ public interface Member extends IMentionable, IPermissionHolder, IDetachableEnti
      * @see    Guild#modifyMemberRoles(Member, Collection, Collection)
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     List<Role> getRoles();
 
@@ -544,7 +541,6 @@ public interface Member extends IMentionable, IPermissionHolder, IDetachableEnti
      * @see    Guild#modifyMemberRoles(Member, Collection, Collection)
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     Set<Role> getUnsortedRoles();
 

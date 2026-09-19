@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.events.emoji.update;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
@@ -54,7 +53,6 @@ public class EmojiUpdateRolesEvent extends GenericEmojiUpdateEvent<List<Role>> {
      * @return The old role whitelist
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     public List<Role> getOldRoles() {
         return getOldValue();
@@ -66,7 +64,6 @@ public class EmojiUpdateRolesEvent extends GenericEmojiUpdateEvent<List<Role>> {
      * @return The new role whitelist
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     public List<Role> getNewRoles() {
         return getNewValue();
@@ -74,7 +71,6 @@ public class EmojiUpdateRolesEvent extends GenericEmojiUpdateEvent<List<Role>> {
 
     @Nonnull
     @Override
-    @ReadOnly
     @Unmodifiable
     public List<Role> getOldValue() {
         return super.getOldValue();
@@ -82,7 +78,6 @@ public class EmojiUpdateRolesEvent extends GenericEmojiUpdateEvent<List<Role>> {
 
     @Nonnull
     @Override
-    @ReadOnly
     @Unmodifiable
     public List<Role> getNewValue() {
         return super.getNewValue();

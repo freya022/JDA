@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.api.entities;
 
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.utils.AttachmentProxy;
 import net.dv8tion.jda.api.utils.FileProxy;
@@ -292,7 +291,6 @@ public class MessageEmbed implements SerializableData {
      *         containing field information.
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     public List<Field> getFields() {
         return fields;
@@ -418,7 +416,6 @@ public class MessageEmbed implements SerializableData {
      * @see    MessageEmbedFlag
      */
     @Nonnull
-    @ReadOnly
     @Unmodifiable
     public Set<MessageEmbedFlag> getFlags() {
         return Collections.unmodifiableSet(MessageEmbedFlag.fromBitField(flags));
@@ -701,7 +698,6 @@ public class MessageEmbed implements SerializableData {
          * @see    MessageEmbedMediaFlag
          */
         @Nonnull
-        @ReadOnly
         @Unmodifiable
         public Set<MessageEmbedMediaFlag> getFlags() {
             return Collections.unmodifiableSet(MessageEmbedMediaFlag.fromBitField(flags));
@@ -926,7 +922,6 @@ public class MessageEmbed implements SerializableData {
          * @see    MessageEmbedMediaFlag
          */
         @Nonnull
-        @ReadOnly
         @Unmodifiable
         public Set<MessageEmbedMediaFlag> getFlags() {
             return Collections.unmodifiableSet(MessageEmbedMediaFlag.fromBitField(flags));
@@ -1085,7 +1080,6 @@ public class MessageEmbed implements SerializableData {
          * @see    MessageEmbedMediaFlag
          */
         @Nonnull
-        @ReadOnly
         @Unmodifiable
         public Set<MessageEmbedMediaFlag> getFlags() {
             return Collections.unmodifiableSet(MessageEmbedMediaFlag.fromBitField(flags));
