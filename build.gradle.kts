@@ -191,7 +191,7 @@ dependencies {
     //Code safety
     compileOnly(libs.findbugs)
     compileOnly(libs.jetbrains.annotations)
-    compileOnly(libs.kotlin.annotations)
+    compileOnly(project(":fake-kotlin-annotations"))
 
     //Logger
     api(libs.slf4j)
@@ -229,7 +229,7 @@ dependencies {
     testImplementation(libs.commons.lang3)
     testImplementation(libs.logback.classic)
     testImplementation(libs.archunit)
-    testImplementation(libs.kotlin.annotations)
+    testImplementation(project(":fake-kotlin-annotations"))
 
     testJava8Implementation(libs.bundles.junit.java8)
     testJava8Implementation(libs.assertj)
@@ -315,6 +315,7 @@ spotless {
         licenseHeader("/*\n$copyrightHeader\n */\n\n")
 
         target("src/**/*.java")
+        targetExclude("src/main/java/kotlin/annotations/jvm/*.java")
 
         removeUnusedImports()
         importOrder("", "java", "javax", "\\#")
