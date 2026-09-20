@@ -17,14 +17,10 @@
 package net.dv8tion.jda.test.compliance;
 
 import com.tngtech.archunit.base.DescribedPredicate;
-import com.tngtech.archunit.core.domain.JavaClass;
-import com.tngtech.archunit.core.domain.JavaMethod;
-import com.tngtech.archunit.core.domain.JavaModifier;
+import com.tngtech.archunit.core.domain.*;
 import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
-import kotlin.annotations.jvm.Mutable;
-import kotlin.annotations.jvm.ReadOnly;
 import net.dv8tion.jda.annotations.UnknownNullability;
 import net.dv8tion.jda.api.managers.Manager;
 import net.dv8tion.jda.api.requests.RestAction;
@@ -33,8 +29,13 @@ import net.dv8tion.jda.api.utils.IOFunction;
 import org.jetbrains.annotations.Contract;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.lang.classfile.*;
+import java.lang.classfile.attribute.RuntimeInvisibleTypeAnnotationsAttribute;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.CheckReturnValue;
@@ -43,8 +44,7 @@ import javax.annotation.Nullable;
 
 import static com.tngtech.archunit.base.DescribedPredicate.describe;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.assignableTo;
-import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
-import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.*;
 
 public class ArchUnitComplianceTest {
     @Test
@@ -180,13 +180,13 @@ public class ArchUnitComplianceTest {
                 .arePublic()
                 .or()
                 .areProtected()
+                .and(DescribedPredicate.alwaysTrue().as("return mutable types"))
                 .and()
                 // Overrides with different return/parameter types makes javac generate synthetic bridges,
                 // ArchUnit picks them up as it reads the bytecode,
                 // we can ignore those as they are inaccessible without reflection.
                 .doNotHaveModifier(JavaModifier.SYNTHETIC)
-                .and(returnACollection())
-                .should(haveKotlinMutabilityAnnotation())
+                .should(haveUnmodifiableOrKotlinMutableAnnotation())
                 .check(SourceSets.getApiClasses());
     }
 
@@ -205,43 +205,158 @@ public class ArchUnitComplianceTest {
         };
     }
 
-    private static DescribedPredicate<JavaMethod> returnACollection() {
-        return new DescribedPredicate<>("return a Collection") {
-            @Override
-            public boolean test(JavaMethod method) {
-                var rawReturnType = method.getRawReturnType();
-                return rawReturnType.isEquivalentTo(List.class)
-                        || rawReturnType.isEquivalentTo(Set.class)
-                        || rawReturnType.isEquivalentTo(Map.class);
+    private static class UnknownMutabilityReturnTypeWalker {
+        private final List<TypeAnnotation> typeAnnotations;
+
+        private final List<List<Integer>> typeArgumentChains = new ArrayList<>();
+        private final Deque<Integer> currentChain = new ArrayDeque<>();
+
+        private UnknownMutabilityReturnTypeWalker(List<TypeAnnotation> typeAnnotations) {
+            this.typeAnnotations = typeAnnotations;
+        }
+
+        static List<List<Integer>> walk(List<TypeAnnotation> typeAnnotations, Signature signature) {
+            var walker = new UnknownMutabilityReturnTypeWalker(typeAnnotations);
+            walker.walk(signature);
+            return walker.typeArgumentChains;
+        }
+
+        private void walk(Signature signature) {
+            if (signature instanceof Signature.ClassTypeSig classTypeSig) {
+                if (isMutableType(classTypeSig) && !isCurrentTypeAnnotated(typeAnnotations)) {
+                    typeArgumentChains.add(new ArrayList<>(currentChain));
+                }
+
+                // Recursion on type arguments (e.g. a list's element type)
+                List<Signature.TypeArg> typeArgs = classTypeSig.typeArgs();
+                for (int i = 0, typeArgsSize = typeArgs.size(); i < typeArgsSize; i++) {
+                    var typeArg = typeArgs.get(i);
+                    if (!(typeArg instanceof Signature.TypeArg.Bounded boundedTypeArg)) {
+                        continue;
+                    }
+
+                    try {
+                        currentChain.add(i);
+                        walk(boundedTypeArg.boundType());
+                    } finally {
+                        currentChain.removeLast();
+                    }
+                }
             }
-        };
+        }
+
+        private static boolean isMutableType(Signature.ClassTypeSig classTypeSig) {
+            String className = classTypeSig.className();
+            return className.equals(InternalNames.LIST)
+                    || className.equals(InternalNames.SET)
+                    || className.equals(InternalNames.MAP);
+        }
+
+        private boolean isCurrentTypeAnnotated(List<TypeAnnotation> typeAnnotations) {
+            for (var typeAnnotation : typeAnnotations) {
+                if (isMutabilityAnnotation(typeAnnotation)) {
+                    // There is at least one mutability annotation,
+                    // but it needs to be applied on the expected (sub)signature
+
+                    var pathComponents = typeAnnotation.targetPath();
+
+                    // If not all path components are type arguments,
+                    // the built path would be incompatible until the walker supports it
+                    if (!pathComponents.stream().allMatch(UnknownMutabilityReturnTypeWalker::isTypeArgumentComponent)) {
+                        continue;
+                    }
+
+                    List<Integer> typeArgumentPath = pathComponents.stream()
+                            .map(TypeAnnotation.TypePathComponent::typeArgumentIndex)
+                            .toList();
+
+                    if (new ArrayList<>(currentChain).equals(typeArgumentPath)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private static boolean isMutabilityAnnotation(TypeAnnotation typeAnnotation) {
+            var annotationName = typeAnnotation.annotation().className();
+            return annotationName.equalsString(Descriptors.UNMODIFIABLE)
+                    || annotationName.equalsString(Descriptors.UNMODIFIABLE_VIEW)
+                    || annotationName.equalsString(Descriptors.MUTABLE);
+        }
+
+        private static boolean isTypeArgumentComponent(TypeAnnotation.TypePathComponent pathComponent) {
+            return pathComponent.typePathKind() == TypeAnnotation.TypePathComponent.Kind.TYPE_ARGUMENT;
+        }
     }
 
-    private static ArchCondition<JavaMethod> haveKotlinMutabilityAnnotation() {
-        return new ArchCondition<>("have Kotlin mutability annotation") {
+    private static ArchCondition<JavaMethod> haveUnmodifiableOrKotlinMutableAnnotation() {
+        return new ArchCondition<>("have @Unmodifiable(View) or Kotlin's @Mutable annotation") {
+
+            private final Map<String, ClassModel> classModelCache = new HashMap<>();
+
             @Override
             public void check(JavaMethod method, ConditionEvents events) {
-                // TODO use this instead when https://github.com/TNG/ArchUnit/issues/1382 is fixed
+                var classModel = loadClassModel(method.getOwner());
+                var methodModel = findMethodModel(classModel, method);
 
-                //                if (method.isAnnotatedWith(Unmodifiable.class) ||
-                // method.isAnnotatedWith(UnmodifiableView.class)) {
-                //                    if (!method.isAnnotatedWith(ReadOnly.class)) {
-                //                        events.add(SimpleConditionEvent.violated(method, method.getDescription() + "
-                // is not annotated with " + ReadOnly.class.getSimpleName()));
-                //                    }
-                //                } else {
-                //                    if (!method.isAnnotatedWith(Mutable.class)) {
-                //                        events.add(SimpleConditionEvent.violated(method, method.getDescription() + "
-                // is not annotated with " + Mutable.class.getSimpleName()));
-                //                    }
-                //                }
+                // Collection types has type arguments so it always carries a Signature attribute
+                var signature =
+                        methodModel.findAttribute(Attributes.signature()).orElse(null);
+                if (signature == null) {
+                    return;
+                }
 
-                if (!method.isAnnotatedWith(ReadOnly.class) && !method.isAnnotatedWith(Mutable.class)) {
+                var typeArgumentChains = UnknownMutabilityReturnTypeWalker.walk(
+                        getTypeAnnotations(methodModel),
+                        // Always a ref type since there are type arguments and thus signature
+                        signature.asMethodSignature().result());
+
+                if (!typeArgumentChains.isEmpty()) {
                     events.add(SimpleConditionEvent.violated(
                             method,
-                            method.getDescription() + " is not annotated with " + ReadOnly.class.getSimpleName()
-                                    + " or " + Mutable.class.getSimpleName()));
+                            "Method is missing one or more @Unmodifiable(View) / @Mutable => %s %s.%s(%s) (%s:%s)"
+                                    .formatted(
+                                            method.getRawReturnType().getSimpleName(),
+                                            method.getOwner().getSimpleName(),
+                                            method.getName(),
+                                            method.getParameterTypes().stream()
+                                                    .map(Object::toString)
+                                                    .collect(Collectors.joining(", ")),
+                                            method.getSourceCodeLocation().getSourceFileName(),
+                                            method.getSourceCodeLocation().getLineNumber())));
                 }
+            }
+
+            private ClassModel loadClassModel(JavaClass javaClass) {
+                return classModelCache.computeIfAbsent(javaClass.getFullName(), _ -> {
+                    try {
+                        var source = javaClass
+                                .getSource()
+                                .orElseThrow(() -> new AssertionError("No source for class " + javaClass));
+                        return ClassFile.of().parse(Path.of(source.getUri()));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+
+            @Nonnull
+            private static MethodModel findMethodModel(ClassModel classModel, JavaMethod method) {
+                return classModel.methods().stream()
+                        .filter(m -> m.methodName().equalsString(method.getName())
+                                && m.methodType().equalsString(method.getDescriptor()))
+                        .findAny()
+                        .orElseThrow(() -> new AssertionError("Could not find matching MethodModel for " + method));
+            }
+
+            @Nonnull
+            private static List<TypeAnnotation> getTypeAnnotations(MethodModel methodModel) {
+                return methodModel
+                        .findAttribute(Attributes.runtimeInvisibleTypeAnnotations())
+                        .map(RuntimeInvisibleTypeAnnotationsAttribute::annotations)
+                        .orElse(Collections.emptyList());
             }
         };
     }
