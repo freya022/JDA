@@ -206,6 +206,15 @@ public class ArchUnitComplianceTest {
     }
 
     private static class UnknownMutabilityReturnTypeWalker {
+        private static final List<String> MUTABLE_TYPES = List.of(
+                InternalNames.ITERABLE,
+                InternalNames.ITERATOR,
+                InternalNames.COLLECTION,
+                InternalNames.LIST,
+                InternalNames.SET,
+                InternalNames.MAP,
+                InternalNames.MAP_ENTRY);
+
         private final List<TypeAnnotation> typeAnnotations;
 
         private final List<List<Integer>> typeArgumentChains = new ArrayList<>();
@@ -246,10 +255,7 @@ public class ArchUnitComplianceTest {
         }
 
         private static boolean isMutableType(Signature.ClassTypeSig classTypeSig) {
-            String className = classTypeSig.className();
-            return className.equals(InternalNames.LIST)
-                    || className.equals(InternalNames.SET)
-                    || className.equals(InternalNames.MAP);
+            return MUTABLE_TYPES.contains(classTypeSig.className());
         }
 
         private boolean isCurrentTypeAnnotated(List<TypeAnnotation> typeAnnotations) {

@@ -16,14 +16,16 @@
 
 package net.dv8tion.jda.test.compliance;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 class InternalNames {
+    static final String ITERABLE = toInternalName(Iterable.class);
+    static final String ITERATOR = toInternalName(Iterator.class);
+    static final String COLLECTION = toInternalName(Collection.class);
     static final String LIST = toInternalName(List.class);
     static final String SET = toInternalName(Set.class);
     static final String MAP = toInternalName(Map.class);
+    static final String MAP_ENTRY = toInternalName(Map.Entry.class);
 
     private static String toInternalName(Class<?> clazz) {
         var desc = clazz.descriptorString();
