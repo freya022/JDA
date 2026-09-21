@@ -174,7 +174,7 @@ public class ArchUnitComplianceTest {
     }
 
     @Test
-    void testReturnedCollectionsHaveKotlinMutabilityAnnotation() {
+    void testReturnedCollectionsHaveMutabilityAnnotation() {
         methods()
                 .that()
                 .arePublic()
