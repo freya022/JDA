@@ -1039,7 +1039,7 @@ public class JDAImpl implements JDA {
 
         return new RestActionImpl<>(this, route, (response, request) -> response.getArray().stream(DataArray::getObject)
                 .map(json -> new CommandImpl(this, null, json))
-                .collect(Collectors.toList()));
+                .collect(Helpers.toMutableList()));
     }
 
     @Nonnull
