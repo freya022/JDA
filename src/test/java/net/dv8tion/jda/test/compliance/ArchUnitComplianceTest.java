@@ -174,6 +174,82 @@ public class ArchUnitComplianceTest {
     }
 
     @Test
+    void testCollectionsInGenericsHaveMutabilityAnnotation() {
+        classes().should(haveMutabilityAnnotations()).check(SourceSets.getApiClasses());
+    }
+
+    @Nonnull
+    private static ArchCondition<JavaClass> haveMutabilityAnnotations() {
+        return new ArchCondition<>("have mutability annotations") {
+
+            private static final ClassModelCache classModelCache = new ClassModelCache();
+
+            @Override
+            public void check(JavaClass item, ConditionEvents events) {
+                var classModel = classModelCache.loadClassModel(item);
+
+                // Collection types has type arguments so it always carries a Signature attribute
+                var signature = classModel.findAttribute(Attributes.signature()).orElse(null);
+                if (signature == null) {
+                    return;
+                }
+
+                var typeAnnotations = getTypeAnnotations(classModel);
+                var classSignature = signature.asClassSignature();
+
+                checkSuperclass(item, events, typeAnnotations, classSignature);
+                checkSuperinterfaces(item, events, classSignature, typeAnnotations);
+            }
+
+            private static void checkSuperclass(
+                    JavaClass item,
+                    ConditionEvents events,
+                    List<TypeAnnotation> typeAnnotations,
+                    ClassSignature classSignature) {
+                var typeArgumentsChain = removeRootProblems(
+                        UnknownMutabilityReturnTypeWalker.walk(typeAnnotations, classSignature.superclassSignature()));
+
+                if (!typeArgumentsChain.isEmpty()) {
+                    events.add(SimpleConditionEvent.violated(
+                            item,
+                            "Class %s is missing one or more @Unmodifiable(View) / @Mutable on its superclass"
+                                    .formatted(item.getSimpleName())));
+                }
+            }
+
+            private static void checkSuperinterfaces(
+                    JavaClass item,
+                    ConditionEvents events,
+                    ClassSignature classSignature,
+                    List<TypeAnnotation> typeAnnotations) {
+                for (var superinterfaceSignature : classSignature.superinterfaceSignatures()) {
+                    var typeArgumentsChain = removeRootProblems(
+                            UnknownMutabilityReturnTypeWalker.walk(typeAnnotations, superinterfaceSignature));
+
+                    if (!typeArgumentsChain.isEmpty()) {
+                        events.add(SimpleConditionEvent.violated(
+                                item,
+                                "Class %s is missing one or more @Unmodifiable(View) / @Mutable on superinterface %s"
+                                        .formatted(
+                                                item.getSimpleName(),
+                                                superinterfaceSignature
+                                                        .classDesc()
+                                                        .displayName())));
+                    }
+                }
+            }
+
+            // We want to remove root problems because mutability annotations don't work on roots of supertypes,
+            // but still works on type arguments
+            private static List<List<Integer>> removeRootProblems(List<List<Integer>> typeArgumentsChain) {
+                return typeArgumentsChain.stream()
+                        .filter(chain -> !chain.isEmpty())
+                        .toList();
+            }
+        };
+    }
+
+    @Test
     void testReturnedCollectionsHaveMutabilityAnnotation() {
         methods()
                 .that()
