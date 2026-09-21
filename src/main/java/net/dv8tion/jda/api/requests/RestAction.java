@@ -38,7 +38,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.*;
 import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -1059,7 +1058,8 @@ public interface RestAction<T> {
     @Nonnull
     @CheckReturnValue
     @SuppressWarnings("unchecked")
-    default RestAction<@Mutable List<T>> zip(@Nonnull RestAction<? extends T> first, @Nonnull RestAction<? extends T>... other) {
+    default RestAction<@Mutable List<T>> zip(
+            @Nonnull RestAction<? extends T> first, @Nonnull RestAction<? extends T>... other) {
         Checks.notNull(first, "RestAction");
         Checks.noneNull(other, "RestAction");
         List<RestAction<? extends T>> list = new ArrayList<>();
