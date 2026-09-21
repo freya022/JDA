@@ -44,7 +44,7 @@ import javax.annotation.Nonnull;
  * member was updated and gives us the updated member object. In order to fire a specific event like this we
  * need to have the old member cached to compare against.
  */
-public class UserUpdateActivityOrderEvent extends GenericUserUpdateEvent<List<Activity>>
+public class UserUpdateActivityOrderEvent extends GenericUserUpdateEvent<@Unmodifiable List<Activity>>
         implements GenericUserPresenceEvent {
     public static final String IDENTIFIER = "activity_order";
 

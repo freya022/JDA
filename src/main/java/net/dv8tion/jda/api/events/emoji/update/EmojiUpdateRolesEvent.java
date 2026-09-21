@@ -39,7 +39,7 @@ import javax.annotation.Nonnull;
  *
  * <p>Identifier: {@code roles}
  */
-public class EmojiUpdateRolesEvent extends GenericEmojiUpdateEvent<List<Role>> {
+public class EmojiUpdateRolesEvent extends GenericEmojiUpdateEvent<@Unmodifiable List<Role>> {
     public static final String IDENTIFIER = "roles";
 
     public EmojiUpdateRolesEvent(

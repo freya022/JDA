@@ -40,7 +40,7 @@ import javax.annotation.Nonnull;
  * @see ThreadChannel#getAppliedTags()
  * @see ChannelField#APPLIED_TAGS
  */
-public class ChannelUpdateAppliedTagsEvent extends GenericChannelUpdateEvent<List<Long>> {
+public class ChannelUpdateAppliedTagsEvent extends GenericChannelUpdateEvent<@Unmodifiable List<Long>> {
     public static final ChannelField FIELD = ChannelField.APPLIED_TAGS;
     public static final String IDENTIFIER = FIELD.getFieldName();
 

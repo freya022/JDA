@@ -39,7 +39,7 @@ import javax.annotation.Nonnull;
  *
  * <p>Identifier: {@code tags}
  */
-public class GuildStickerUpdateTagsEvent extends GenericGuildStickerUpdateEvent<Set<String>> {
+public class GuildStickerUpdateTagsEvent extends GenericGuildStickerUpdateEvent<@Unmodifiable Set<String>> {
     public static final String IDENTIFIER = "tags";
 
     public GuildStickerUpdateTagsEvent(

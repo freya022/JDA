@@ -31,7 +31,7 @@ import javax.annotation.Nonnull;
  *
  * <p>Identifier: {@code features}
  */
-public class GuildUpdateFeaturesEvent extends GenericGuildUpdateEvent<Set<String>> {
+public class GuildUpdateFeaturesEvent extends GenericGuildUpdateEvent<@Unmodifiable Set<String>> {
     public static final String IDENTIFIER = "features";
 
     public GuildUpdateFeaturesEvent(
