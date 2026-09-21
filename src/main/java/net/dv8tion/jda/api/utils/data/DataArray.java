@@ -752,6 +752,7 @@ public class DataArray implements Iterable<Object>, SerializableArray {
     }
 
     @Nonnull
+    @Mutable
     @Override
     public Iterator<Object> iterator() {
         return data.iterator();

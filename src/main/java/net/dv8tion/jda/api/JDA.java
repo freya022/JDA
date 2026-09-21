@@ -644,7 +644,7 @@ public interface JDA extends IGuildChannelContainer<Channel> {
      */
     @Nonnull
     @CheckReturnValue
-    default RestAction<List<Command>> retrieveCommands() {
+    default RestAction<@Mutable List<Command>> retrieveCommands() {
         return retrieveCommands(false);
     }
 
@@ -659,7 +659,7 @@ public interface JDA extends IGuildChannelContainer<Channel> {
      */
     @Nonnull
     @CheckReturnValue
-    RestAction<List<Command>> retrieveCommands(boolean withLocalizations);
+    RestAction<@Mutable List<Command>> retrieveCommands(boolean withLocalizations);
 
     /**
      * Retrieves the existing {@link Command} instance by id.
@@ -873,7 +873,7 @@ public interface JDA extends IGuildChannelContainer<Channel> {
      */
     @Nonnull
     @CheckReturnValue
-    RestAction<List<RoleConnectionMetadata>> retrieveRoleConnectionMetadata();
+    RestAction<@Unmodifiable List<RoleConnectionMetadata>> retrieveRoleConnectionMetadata();
 
     /**
      * Updates the currently configured {@link RoleConnectionMetadata} records for this application.
@@ -892,7 +892,7 @@ public interface JDA extends IGuildChannelContainer<Channel> {
      */
     @Nonnull
     @CheckReturnValue
-    RestAction<List<RoleConnectionMetadata>> updateRoleConnectionMetadata(
+    RestAction<@Unmodifiable List<RoleConnectionMetadata>> updateRoleConnectionMetadata(
             @Nonnull Collection<? extends RoleConnectionMetadata> records);
 
     /**
@@ -1687,7 +1687,7 @@ public interface JDA extends IGuildChannelContainer<Channel> {
      */
     @Nonnull
     @CheckReturnValue
-    RestAction<List<ApplicationEmoji>> retrieveApplicationEmojis();
+    RestAction<@Unmodifiable List<ApplicationEmoji>> retrieveApplicationEmojis();
 
     /**
      * Retrieves an application emoji together with its respective creator.
@@ -1912,7 +1912,7 @@ public interface JDA extends IGuildChannelContainer<Channel> {
      */
     @Nonnull
     @CheckReturnValue
-    RestAction<List<SKU>> retrieveSKUList();
+    RestAction<@Unmodifiable List<SKU>> retrieveSKUList();
 
     /**
      * A {@link net.dv8tion.jda.api.requests.restaction.pagination.PaginationAction PaginationAction} implementation

@@ -136,7 +136,7 @@ public class PrivilegeConfig {
      */
     @Nonnull
     @Mutable
-    public Map<String, List<IntegrationPrivilege>> getAsMap() {
+    public Map<String, @Unmodifiable List<IntegrationPrivilege>> getAsMap() {
         return privileges;
     }
 }
