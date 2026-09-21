@@ -20,6 +20,7 @@ import com.google.errorprone.annotations.FormatMethod;
 import com.google.errorprone.annotations.FormatString;
 import gnu.trove.map.TLongObjectMap;
 import gnu.trove.map.hash.TLongObjectHashMap;
+import kotlin.annotations.jvm.Mutable;
 import net.dv8tion.jda.api.utils.Result;
 import net.dv8tion.jda.api.utils.data.DataArray;
 import net.dv8tion.jda.api.utils.data.DataObject;
@@ -56,6 +57,12 @@ public final class Helpers {
     @SuppressWarnings("unchecked")
     public static <T> Consumer<T> emptyConsumer() {
         return (Consumer<T>) EMPTY_CONSUMER;
+    }
+
+    @Nonnull
+    @Mutable
+    public static <T> List<T> emptyMutableList() {
+        return new ArrayList<>(0);
     }
 
     public static OffsetDateTime toOffset(long instant) {

@@ -165,7 +165,7 @@ public interface MessageChannel extends Channel, Formattable {
     @Mutable
     default List<CompletableFuture<Void>> purgeMessagesById(@Nonnull List<String> messageIds) {
         if (messageIds == null || messageIds.isEmpty()) {
-            return Collections.emptyList();
+            return Helpers.emptyMutableList();
         }
         long[] ids = new long[messageIds.size()];
         for (int i = 0; i < ids.length; i++) {
@@ -196,7 +196,7 @@ public interface MessageChannel extends Channel, Formattable {
     @Mutable
     default List<CompletableFuture<Void>> purgeMessagesById(@Nonnull String... messageIds) {
         if (messageIds == null || messageIds.length == 0) {
-            return Collections.emptyList();
+            return Helpers.emptyMutableList();
         }
         return purgeMessagesById(Arrays.asList(messageIds));
     }
@@ -227,7 +227,7 @@ public interface MessageChannel extends Channel, Formattable {
     @Mutable
     default List<CompletableFuture<Void>> purgeMessages(@Nonnull Message... messages) {
         if (messages == null || messages.length == 0) {
-            return Collections.emptyList();
+            return Helpers.emptyMutableList();
         }
         return purgeMessages(Arrays.asList(messages));
     }
@@ -260,7 +260,7 @@ public interface MessageChannel extends Channel, Formattable {
     @Mutable
     default List<CompletableFuture<Void>> purgeMessages(@Nonnull List<? extends Message> messages) {
         if (messages == null || messages.isEmpty()) {
-            return Collections.emptyList();
+            return Helpers.emptyMutableList();
         }
         return purgeMessagesById(messages.stream()
                 .filter(m -> m.getType().canDelete())
@@ -304,7 +304,7 @@ public interface MessageChannel extends Channel, Formattable {
     @Mutable
     default List<CompletableFuture<Void>> purgeMessagesById(@Nonnull long... messageIds) {
         if (messageIds == null || messageIds.length == 0) {
-            return Collections.emptyList();
+            return Helpers.emptyMutableList();
         }
         List<CompletableFuture<Void>> list = new ArrayList<>(messageIds.length);
         TreeSet<Long> sortedIds = new TreeSet<>(Comparator.reverseOrder());

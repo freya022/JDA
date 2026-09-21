@@ -1242,7 +1242,7 @@ public class GuildImpl implements Guild {
                 "Cannot retrieve presences of members without GUILD_PRESENCES intent!");
 
         if (ids.length == 0) {
-            return new GatewayTask<>(CompletableFuture.completedFuture(Collections.emptyList()), () -> {});
+            return new GatewayTask<>(CompletableFuture.completedFuture(Helpers.emptyMutableList()), () -> {});
         }
         Checks.check(ids.length <= 100, "You can only request 100 members at once");
         MemberChunkManager chunkManager = api.getClient().getChunkManager();
