@@ -300,11 +300,11 @@ public class ArchUnitComplianceTest {
     private static ArchCondition<JavaMethod> haveUnmodifiableOrKotlinMutableAnnotation() {
         return new ArchCondition<>("have @Unmodifiable(View) or Kotlin's @Mutable annotation") {
 
-            private final Map<String, ClassModel> classModelCache = new HashMap<>();
+            private static final ClassModelCache classModelCache = new ClassModelCache();
 
             @Override
             public void check(JavaMethod method, ConditionEvents events) {
-                var classModel = loadClassModel(method.getOwner());
+                var classModel = classModelCache.loadClassModel(method.getOwner());
                 var methodModel = findMethodModel(classModel, method);
 
                 // Collection types has type arguments so it always carries a Signature attribute
@@ -335,19 +335,6 @@ public class ArchUnitComplianceTest {
                 }
             }
 
-            private ClassModel loadClassModel(JavaClass javaClass) {
-                return classModelCache.computeIfAbsent(javaClass.getFullName(), _ -> {
-                    try {
-                        var source = javaClass
-                                .getSource()
-                                .orElseThrow(() -> new AssertionError("No source for class " + javaClass));
-                        return ClassFile.of().parse(Path.of(source.getUri()));
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-            }
-
             @Nonnull
             private static MethodModel findMethodModel(ClassModel classModel, JavaMethod method) {
                 return classModel.methods().stream()
@@ -356,14 +343,31 @@ public class ArchUnitComplianceTest {
                         .findAny()
                         .orElseThrow(() -> new AssertionError("Could not find matching MethodModel for " + method));
             }
-
-            @Nonnull
-            private static List<TypeAnnotation> getTypeAnnotations(MethodModel methodModel) {
-                return methodModel
-                        .findAttribute(Attributes.runtimeInvisibleTypeAnnotations())
-                        .map(RuntimeInvisibleTypeAnnotationsAttribute::annotations)
-                        .orElse(Collections.emptyList());
-            }
         };
+    }
+
+    private static class ClassModelCache {
+
+        private final Map<String, ClassModel> classModelCache = new HashMap<>();
+
+        ClassModel loadClassModel(JavaClass javaClass) {
+            return classModelCache.computeIfAbsent(javaClass.getFullName(), _ -> {
+                try {
+                    var source = javaClass
+                            .getSource()
+                            .orElseThrow(() -> new AssertionError("No source for class " + javaClass));
+                    return ClassFile.of().parse(Path.of(source.getUri()));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+    }
+
+    @Nonnull
+    private static List<TypeAnnotation> getTypeAnnotations(AttributedElement element) {
+        return element.findAttribute(Attributes.runtimeInvisibleTypeAnnotations())
+                .map(RuntimeInvisibleTypeAnnotationsAttribute::annotations)
+                .orElse(Collections.emptyList());
     }
 }
