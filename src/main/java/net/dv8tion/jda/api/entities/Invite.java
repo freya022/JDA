@@ -128,14 +128,16 @@ public interface Invite {
      * <p>The target users are processed asynchronously, the action may complete before all targeted users are set,
      * you can use {@link #retrieveTargetUsersJobStatus(JDA, String)} to check the status.
      *
-     * <p>This endpoint requires the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     * <p>This endpoint requires the bot to be the inviter,
+     * or to have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
      *
      * <p>Possible {@link net.dv8tion.jda.api.requests.ErrorResponse ErrorResponses} include:
      * <ul>
      *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#UNKNOWN_INVITE Unknown Invite}
      *     <br>The Invite did not exist (possibly deleted), or is a group DM invite, or the account is banned in the guild.</li>
      *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#MISSING_PERMISSIONS Missing Permissions}
-     *     <br>If the bot does not have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.</li>
+     *     <br>If the bot is not the inviter and does not have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     *     </li>
      *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#INVALID_FORM_BODY Invalid Form Body}
      *     <br>If at least one user ID is invalid.</li>
      * </ul>
@@ -160,7 +162,9 @@ public interface Invite {
      * Retrieves a list of {@linkplain UserSnowflake user IDs} to which the given invite code is restricted to.
      * <br>Only users in the returned list are able to use the invite. This can be changed with {@link #updateTargetUsers(JDA, String)}.
      *
-     * <p>This endpoint requires the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     * <p>This endpoint requires the bot to be the inviter,
+     * or to have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild,
+     * or alternatively, {@link net.dv8tion.jda.api.Permission#VIEW_AUDIT_LOGS VIEW_AUDIT_LOGS}.
      *
      * <p>Possible {@link net.dv8tion.jda.api.requests.ErrorResponse ErrorResponses} include:
      * <ul>
@@ -171,7 +175,9 @@ public interface Invite {
      *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#INVITE_TARGET_USERS_FILE_NOT_PROCESSED Invite Target Users File Not Processed}
      *     <br>If the invite has target users, but they were not processed yet.</li>
      *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#MISSING_PERMISSIONS Missing Permissions}
-     *     <br>If the bot does not have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.</li>
+     *     <br>If the bot is not the inviter and does not have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER}
+     *         nor {@link net.dv8tion.jda.api.Permission#VIEW_AUDIT_LOGS VIEW_AUDIT_LOGS} permission in the target guild.
+     *     </li>
      * </ul>
      *
      * @param  api
@@ -193,7 +199,9 @@ public interface Invite {
     /**
      * Retrieves a {@link TargetUsersJobStatus} representing the status of a {@link #updateTargetUsers()} request.
      *
-     * <p>This endpoint requires the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     * <p>This endpoint requires the bot to be the inviter,
+     * or to have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild,
+     * or alternatively, {@link net.dv8tion.jda.api.Permission#VIEW_AUDIT_LOGS VIEW_AUDIT_LOGS}.
      *
      * <p>Possible {@link net.dv8tion.jda.api.requests.ErrorResponse ErrorResponses} include:
      * <ul>
@@ -202,7 +210,9 @@ public interface Invite {
      *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#UNKNOWN_INVITE_TARGET_USERS_JOB Unknown Invite Target Users Job}
      *     <br>If the invite does not have any target users job.</li>
      *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#MISSING_PERMISSIONS Missing Permissions}
-     *     <br>If the bot does not have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.</li>
+     *     <br>If the bot is not the inviter and does not have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER}
+     *         nor {@link net.dv8tion.jda.api.Permission#VIEW_AUDIT_LOGS VIEW_AUDIT_LOGS} permission in the target guild.
+     *     </li>
      * </ul>
      *
      * @param  api
@@ -265,14 +275,16 @@ public interface Invite {
      * <p>The target users are processed asynchronously, the action may complete before all targeted users are set,
      * you can use {@link #retrieveTargetUsersJobStatus()} to check the status.
      *
-     * <p>This endpoint requires the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     * <p>This endpoint requires the bot to be the inviter,
+     * or to have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
      *
      * <p>Possible {@link net.dv8tion.jda.api.requests.ErrorResponse ErrorResponses} include:
      * <ul>
      *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#UNKNOWN_INVITE Unknown Invite}
      *     <br>The Invite did not exist (possibly deleted), or is a group DM invite, or the account is banned in the guild.</li>
      *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#MISSING_PERMISSIONS Missing Permissions}
-     *     <br>If the bot does not have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.</li>
+     *     <br>If the bot is not the inviter and does not have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     *     </li>
      *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#INVALID_FORM_BODY Invalid Form Body}
      *     <br>If at least one user ID is invalid.</li>
      * </ul>
@@ -290,7 +302,9 @@ public interface Invite {
      * Retrieves a list of {@linkplain UserSnowflake user IDs} to which the given invite code is restricted to.
      * <br>Only users in the returned list are able to use the invite. This can be changed with {@link #updateTargetUsers()}.
      *
-     * <p>This endpoint requires the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     * <p>This endpoint requires the bot to be the inviter,
+     * or to have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild,
+     * or alternatively, {@link net.dv8tion.jda.api.Permission#VIEW_AUDIT_LOGS VIEW_AUDIT_LOGS}.
      *
      * <p>Possible {@link net.dv8tion.jda.api.requests.ErrorResponse ErrorResponses} include:
      * <ul>
@@ -301,7 +315,9 @@ public interface Invite {
      *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#INVITE_TARGET_USERS_FILE_NOT_PROCESSED Invite Target Users File Not Processed}
      *     <br>If the invite has target users, but they were not processed yet.</li>
      *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#MISSING_PERMISSIONS Missing Permissions}
-     *     <br>If the bot does not have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.</li>
+     *     <br>If the bot is not the inviter and does not have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER}
+     *         nor {@link net.dv8tion.jda.api.Permission#VIEW_AUDIT_LOGS VIEW_AUDIT_LOGS} permission in the target guild.
+     *     </li>
      * </ul>
      *
      * @throws IllegalStateException
@@ -316,7 +332,9 @@ public interface Invite {
     /**
      * Retrieves a {@link TargetUsersJobStatus} representing the status of a {@link #updateTargetUsers()} request.
      *
-     * <p>This endpoint requires the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     * <p>This endpoint requires the bot to be the inviter,
+     * or to have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild,
+     * or alternatively, {@link net.dv8tion.jda.api.Permission#VIEW_AUDIT_LOGS VIEW_AUDIT_LOGS}.
      *
      * <p>Possible {@link net.dv8tion.jda.api.requests.ErrorResponse ErrorResponses} include:
      * <ul>
@@ -325,7 +343,9 @@ public interface Invite {
      *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#UNKNOWN_INVITE_TARGET_USERS_JOB Unknown Invite Target Users Job}
      *     <br>If the invite does not have any target users job.</li>
      *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#MISSING_PERMISSIONS Missing Permissions}
-     *     <br>If the bot does not have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.</li>
+     *     <br>If the bot is not the inviter and does not have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER}
+     *         nor {@link net.dv8tion.jda.api.Permission#VIEW_AUDIT_LOGS VIEW_AUDIT_LOGS} permission in the target guild.
+     *     </li>
      * </ul>
      *
      * @throws IllegalStateException
