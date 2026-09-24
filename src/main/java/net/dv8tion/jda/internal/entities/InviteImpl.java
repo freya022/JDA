@@ -212,7 +212,7 @@ public class InviteImpl implements Invite {
         // Discord throws an error for guilds the bot isn't in,
         // but we can't check as sharded bots may throw false positives
         if (guild == null) {
-            throw new IllegalStateException("Cannot get target users of a Group DM invite");
+            throw new IllegalStateException("Cannot update target users of a Group DM invite");
         }
 
         return updateTargetUsers(api, code);
@@ -236,7 +236,7 @@ public class InviteImpl implements Invite {
         // Discord throws an error for guilds the bot isn't in,
         // but we can't check as sharded bots may throw false positives
         if (guild == null) {
-            throw new IllegalStateException("Cannot get target users of a Group DM invite");
+            throw new IllegalStateException("Cannot get target users job status of a Group DM invite");
         }
 
         return retrieveTargetUsersJobStatus(api, code);
