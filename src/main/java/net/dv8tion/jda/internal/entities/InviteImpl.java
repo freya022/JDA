@@ -209,11 +209,7 @@ public class InviteImpl implements Invite {
     @Nonnull
     @Override
     public InviteUpdateTargetUsersActionImpl updateTargetUsers() {
-        // Discord throws an error for guilds the bot isn't in,
-        // but we can't check as sharded bots may throw false positives
-        if (guild == null) {
-            throw new IllegalStateException("Cannot update target users of a Group DM invite");
-        }
+        checkIsInGuild("Cannot update target users of a Group DM invite");
 
         return updateTargetUsers(api, code);
     }
@@ -221,11 +217,7 @@ public class InviteImpl implements Invite {
     @Nonnull
     @Override
     public RestAction<List<? extends UserSnowflake>> retrieveTargetUsers() {
-        // Discord throws an error for guilds the bot isn't in,
-        // but we can't check as sharded bots may throw false positives
-        if (guild == null) {
-            throw new IllegalStateException("Cannot get target users of a Group DM invite");
-        }
+        checkIsInGuild("Cannot get target users of a Group DM invite");
 
         return retrieveTargetUsers(api, code);
     }
@@ -233,11 +225,7 @@ public class InviteImpl implements Invite {
     @Nonnull
     @Override
     public RestAction<TargetUsersJobStatus> retrieveTargetUsersJobStatus() {
-        // Discord throws an error for guilds the bot isn't in,
-        // but we can't check as sharded bots may throw false positives
-        if (guild == null) {
-            throw new IllegalStateException("Cannot get target users job status of a Group DM invite");
-        }
+        checkIsInGuild("Cannot get target users job status of a Group DM invite");
 
         return retrieveTargetUsersJobStatus(api, code);
     }
@@ -347,6 +335,14 @@ public class InviteImpl implements Invite {
     @Override
     public boolean isGuest() {
         return this.guest;
+    }
+
+    private void checkIsInGuild(String message) {
+        // Discord throws an error for guilds the bot isn't in,
+        // but we can't check as sharded bots may throw false positives
+        if (guild == null) {
+            throw new IllegalStateException(message);
+        }
     }
 
     @Override
