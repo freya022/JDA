@@ -213,10 +213,17 @@ public class ArchUnitComplianceTest {
                         UnknownMutabilityReturnTypeWalker.walk(typeAnnotations, classSignature.superclassSignature()));
 
                 if (!typeArgumentsChain.isEmpty()) {
+                    String declType = item.isInterface() ? "interface" : "class";
+
                     events.add(SimpleConditionEvent.violated(
                             item,
-                            "Class %s is missing one or more @Unmodifiable(View) / @Mutable on its superclass"
-                                    .formatted(item.getSimpleName())));
+                            "%s %s extends %s ... (add @Unmodifiable(View) / @Mutable appropriately) (%s:0)"
+                                    .formatted(
+                                            declType,
+                                            item.getSimpleName(),
+                                            MissingTypeAnnotationPrinter.print(
+                                                    classSignature.superclassSignature(), typeArgumentsChain),
+                                            item.getSourceCodeLocation().getSourceFileName())));
                 }
             }
 
@@ -230,14 +237,19 @@ public class ArchUnitComplianceTest {
                             UnknownMutabilityReturnTypeWalker.walk(typeAnnotations, superinterfaceSignature));
 
                     if (!typeArgumentsChain.isEmpty()) {
+                        String declType = item.isInterface() ? "interface" : "class";
+                        String extensionKeyword = item.isInterface() ? "extends" : "implements";
+
                         events.add(SimpleConditionEvent.violated(
                                 item,
-                                "Class %s is missing one or more @Unmodifiable(View) / @Mutable on superinterface %s"
+                                "%s %s %s %s ... (add @Unmodifiable(View) / @Mutable appropriately) (%s:0)"
                                         .formatted(
+                                                declType,
                                                 item.getSimpleName(),
-                                                superinterfaceSignature
-                                                        .classDesc()
-                                                        .displayName())));
+                                                extensionKeyword,
+                                                MissingTypeAnnotationPrinter.print(
+                                                        superinterfaceSignature, typeArgumentsChain),
+                                                item.getSourceCodeLocation().getSourceFileName())));
                     }
                 }
             }
