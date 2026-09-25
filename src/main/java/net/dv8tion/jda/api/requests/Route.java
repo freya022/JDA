@@ -350,6 +350,10 @@ public class Route {
         public static final Route UPDATE_TARGET_USERS = new Route(PUT, "invites/{code}/target-users");
         public static final Route GET_TARGET_USERS_JOB_STATUS =
                 new Route(GET, "invites/{code}/target-users/job-status");
+        public static final Route ADD_TARGET_USER = new Route(PUT, "invites/{code}/target-users/{user_id}");
+        public static final Route REMOVE_TARGET_USER = new Route(DELETE, "invites/{code}/target-users/{user_id}");
+        public static final Route BULK_ADD_TARGET_USER = new Route(POST, "invites/{code}/target-users/bulk-add");
+        public static final Route BULK_REMOVE_TARGET_USER = new Route(POST, "invites/{code}/target-users/bulk-delete");
     }
 
     public static class Templates {

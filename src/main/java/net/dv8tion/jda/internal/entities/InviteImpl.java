@@ -40,6 +40,7 @@ import net.dv8tion.jda.internal.utils.Helpers;
 
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -149,6 +150,48 @@ public class InviteImpl implements Invite {
                 api, route, (response, request) -> new TargetUsersJobStatusImpl(response.getObject()));
     }
 
+    public static RestAction<Void> addTargetUser(JDA api, String code, UserSnowflake user) {
+        Checks.notNull(code, "code");
+        Checks.notNull(api, "api");
+        Checks.notNull(user, "user");
+
+        return new RestActionImpl<>(api, Route.Invites.ADD_TARGET_USER.compile(code, user.getId()));
+    }
+
+    public static RestAction<Void> removeTargetUser(JDA api, String code, UserSnowflake user) {
+        Checks.notNull(code, "code");
+        Checks.notNull(api, "api");
+        Checks.notNull(user, "user");
+
+        return new RestActionImpl<>(api, Route.Invites.REMOVE_TARGET_USER.compile(code, user.getId()));
+    }
+
+    public static RestAction<Void> addTargetUsers(JDA api, String code, List<? extends UserSnowflake> users) {
+        Checks.notNull(code, "code");
+        Checks.notNull(api, "api");
+        Checks.noneNull(users, "users");
+        Checks.check(
+                users.size() <= 1000,
+                "Cannot add more than 1000 users in a single request using this endpoint, please use 'updateTargetUsers' instead.");
+
+        DataObject json = DataObject.empty()
+                .put("user_ids", users.stream().map(ISnowflake::getId).collect(Collectors.toList()));
+        return new RestActionImpl<>(api, Route.Invites.BULK_ADD_TARGET_USER.compile(code), json);
+    }
+
+    public static RestAction<Void> removeTargetUsers(JDA api, String code, List<? extends UserSnowflake> users) {
+        Checks.notNull(code, "code");
+        Checks.notNull(api, "api");
+        Checks.noneNull(users, "users");
+        Checks.check(
+                users.size() <= 1000,
+                "Cannot remove more than 1000 users in a single request using this endpoint, please use 'updateTargetUsers' instead.");
+
+        DataObject json = DataObject.empty()
+                .put("user_ids", users.stream().map(ISnowflake::getId).collect(Collectors.toList()));
+        return new RestActionImpl<>(api, Route.Invites.BULK_REMOVE_TARGET_USER.compile(code), json);
+    }
+
     @Nonnull
     @Override
     public AuditableRestAction<Void> delete() {
@@ -228,6 +271,38 @@ public class InviteImpl implements Invite {
         checkIsInGuild("Cannot get target users job status of a Group DM invite");
 
         return retrieveTargetUsersJobStatus(api, code);
+    }
+
+    @Nonnull
+    @Override
+    public RestAction<Void> addTargetUser(@Nonnull UserSnowflake user) {
+        checkIsInGuild("Cannot update target users of a Group DM invite");
+
+        return addTargetUser(api, code, user);
+    }
+
+    @Nonnull
+    @Override
+    public RestAction<Void> removeTargetUser(@Nonnull UserSnowflake user) {
+        checkIsInGuild("Cannot update target users of a Group DM invite");
+
+        return removeTargetUser(api, code, user);
+    }
+
+    @Nonnull
+    @Override
+    public RestAction<Void> addTargetUsers(@Nonnull List<? extends UserSnowflake> users) {
+        checkIsInGuild("Cannot update target users of a Group DM invite");
+
+        return addTargetUsers(api, code, users);
+    }
+
+    @Nonnull
+    @Override
+    public RestAction<Void> removeTargetUsers(@Nonnull List<? extends UserSnowflake> users) {
+        checkIsInGuild("Cannot update target users of a Group DM invite");
+
+        return removeTargetUsers(api, code, users);
     }
 
     @Nonnull

@@ -232,6 +232,144 @@ public interface Invite {
     }
 
     /**
+     * Adds the provided user to the list of users authorized to use the provided invite code.
+     * Users not in the resulting list will not be able to use the invite.
+     *
+     * <p>This endpoint requires the bot to be the inviter,
+     * or to have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     *
+     * <p>Possible {@link net.dv8tion.jda.api.requests.ErrorResponse ErrorResponses} include:
+     * <ul>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#UNKNOWN_INVITE Unknown Invite}
+     *     <br>The Invite did not exist (possibly deleted), or is a group DM invite, or the account is banned in the guild.</li>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#MISSING_PERMISSIONS Missing Permissions}
+     *     <br>If the bot is not the inviter and does not have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     *     </li>
+     * </ul>
+     *
+     * @param  api
+     *         The JDA instance
+     * @param  code
+     *         A valid invite code
+     * @param  user
+     *         The user to allow
+     *
+     * @throws IllegalArgumentException
+     *         If the provided user is {@code null}
+     *
+     * @return A {@link RestAction} returning nothing
+     */
+    @Nonnull
+    @CheckReturnValue
+    static RestAction<Void> addTargetUser(@Nonnull JDA api, @Nonnull String code, @Nonnull UserSnowflake user) {
+        return InviteImpl.addTargetUser(api, code, user);
+    }
+
+    /**
+     * Removes the provided user from the list of users authorized to use the provided invite code.
+     * <br>If all users are removed, the invite will become usable by anyone!
+     *
+     * <p>This endpoint requires the bot to be the inviter,
+     * or to have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     *
+     * <p>Possible {@link net.dv8tion.jda.api.requests.ErrorResponse ErrorResponses} include:
+     * <ul>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#UNKNOWN_INVITE Unknown Invite}
+     *     <br>The Invite did not exist (possibly deleted), or is a group DM invite, or the account is banned in the guild.</li>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#MISSING_PERMISSIONS Missing Permissions}
+     *     <br>If the bot is not the inviter and does not have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     *     </li>
+     * </ul>
+     *
+     * @param  api
+     *         The JDA instance
+     * @param  code
+     *         A valid invite code
+     * @param  user
+     *         The user to deny (again)
+     *
+     * @throws IllegalArgumentException
+     *         If the provided user is {@code null}
+     *
+     * @return A {@link RestAction} returning nothing
+     */
+    @Nonnull
+    @CheckReturnValue
+    static RestAction<Void> removeTargetUser(@Nonnull JDA api, @Nonnull String code, @Nonnull UserSnowflake user) {
+        return InviteImpl.removeTargetUser(api, code, user);
+    }
+
+    /**
+     * Adds up to 1000 users (per request) to the list of users authorized to use the provided invite code.
+     * Users not in the resulting list will not be able to use the invite.
+     *
+     * <p>This endpoint requires the bot to be the inviter,
+     * or to have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     *
+     * <p>Possible {@link net.dv8tion.jda.api.requests.ErrorResponse ErrorResponses} include:
+     * <ul>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#UNKNOWN_INVITE Unknown Invite}
+     *     <br>The Invite did not exist (possibly deleted), or is a group DM invite, or the account is banned in the guild.</li>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#MISSING_PERMISSIONS Missing Permissions}
+     *     <br>If the bot is not the inviter and does not have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     *     </li>
+     * </ul>
+     *
+     * @param  api
+     *         The JDA instance
+     * @param  code
+     *         A valid invite code
+     * @param  users
+     *         The users to allow, up to 1000
+     *
+     * @throws IllegalArgumentException
+     *         If the provided list or any of its users is {@code null}
+     *
+     * @return A {@link RestAction} returning nothing
+     */
+    @Nonnull
+    @CheckReturnValue
+    static RestAction<Void> addTargetUsers(
+            @Nonnull JDA api, @Nonnull String code, @Nonnull List<? extends UserSnowflake> users) {
+        return InviteImpl.addTargetUsers(api, code, users);
+    }
+
+    /**
+     * Removes up to 1000 users (per request) from the list of users authorized to use the provided invite code.
+     * <br>If all users are removed, the invite will become usable by anyone!
+     *
+     * <p>This endpoint requires the bot to be the inviter,
+     * or to have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     *
+     * <p>Possible {@link net.dv8tion.jda.api.requests.ErrorResponse ErrorResponses} include:
+     * <ul>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#UNKNOWN_INVITE Unknown Invite}
+     *     <br>The Invite did not exist (possibly deleted), or is a group DM invite, or the account is banned in the guild.</li>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#MISSING_PERMISSIONS Missing Permissions}
+     *     <br>If the bot is not the inviter and does not have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     *     </li>
+     * </ul>
+     *
+     * @param  api
+     *         The JDA instance
+     * @param  code
+     *         A valid invite code
+     * @param  users
+     *         The users to deny (again), up to 1000
+     *
+     * @throws IllegalArgumentException
+     *         If the provided list or any of its users is {@code null}
+     *
+     * @return A {@link RestAction} returning nothing
+     */
+    @Nonnull
+    @CheckReturnValue
+    static RestAction<Void> removeTargetUsers(
+            @Nonnull JDA api, @Nonnull String code, @Nonnull List<? extends UserSnowflake> users) {
+        return InviteImpl.removeTargetUsers(api, code, users);
+    }
+
+    /**
      * Deletes this invite.
      * <br>Requires {@link net.dv8tion.jda.api.Permission#MANAGE_CHANNEL MANAGE_CHANNEL} in the invite's channel.
      * Will throw an {@link net.dv8tion.jda.api.exceptions.InsufficientPermissionException InsufficientPermissionException} otherwise.
@@ -356,6 +494,126 @@ public interface Invite {
     @Nonnull
     @CheckReturnValue
     RestAction<TargetUsersJobStatus> retrieveTargetUsersJobStatus();
+
+    /**
+     * Adds the provided user to the list of users authorized to use the provided invite code.
+     * Users not in the resulting list will not be able to use the invite.
+     *
+     * <p>This endpoint requires the bot to be the inviter,
+     * or to have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     *
+     * <p>Possible {@link net.dv8tion.jda.api.requests.ErrorResponse ErrorResponses} include:
+     * <ul>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#UNKNOWN_INVITE Unknown Invite}
+     *     <br>The Invite did not exist (possibly deleted), or is a group DM invite, or the account is banned in the guild.</li>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#MISSING_PERMISSIONS Missing Permissions}
+     *     <br>If the bot is not the inviter and does not have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     *     </li>
+     * </ul>
+     *
+     * @param  user
+     *         The user to allow
+     *
+     * @throws IllegalArgumentException
+     *         If the provided user is {@code null}
+     * @throws IllegalStateException
+     *         If the invite is not from a guild
+     *
+     * @return A {@link RestAction} returning nothing
+     */
+    @Nonnull
+    @CheckReturnValue
+    RestAction<Void> addTargetUser(@Nonnull UserSnowflake user);
+
+    /**
+     * Removes the provided user from the list of users authorized to use the provided invite code.
+     * <br>If all users are removed, the invite will become usable by anyone!
+     *
+     * <p>This endpoint requires the bot to be the inviter,
+     * or to have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     *
+     * <p>Possible {@link net.dv8tion.jda.api.requests.ErrorResponse ErrorResponses} include:
+     * <ul>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#UNKNOWN_INVITE Unknown Invite}
+     *     <br>The Invite did not exist (possibly deleted), or is a group DM invite, or the account is banned in the guild.</li>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#MISSING_PERMISSIONS Missing Permissions}
+     *     <br>If the bot is not the inviter and does not have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     *     </li>
+     * </ul>
+     *
+     * @param  user
+     *         The user to deny (again)
+     *
+     * @throws IllegalArgumentException
+     *         If the provided user is {@code null}
+     * @throws IllegalStateException
+     *         If the invite is not from a guild
+     *
+     * @return A {@link RestAction} returning nothing
+     */
+    @Nonnull
+    @CheckReturnValue
+    RestAction<Void> removeTargetUser(@Nonnull UserSnowflake user);
+
+    /**
+     * Adds up to 1000 users (per request) to the list of users authorized to use the provided invite code.
+     * Users not in the resulting list will not be able to use the invite.
+     *
+     * <p>This endpoint requires the bot to be the inviter,
+     * or to have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     *
+     * <p>Possible {@link net.dv8tion.jda.api.requests.ErrorResponse ErrorResponses} include:
+     * <ul>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#UNKNOWN_INVITE Unknown Invite}
+     *     <br>The Invite did not exist (possibly deleted), or is a group DM invite, or the account is banned in the guild.</li>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#MISSING_PERMISSIONS Missing Permissions}
+     *     <br>If the bot is not the inviter and does not have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     *     </li>
+     * </ul>
+     *
+     * @param  users
+     *         The users to allow, up to 1000
+     *
+     * @throws IllegalArgumentException
+     *         If the provided list or any of its users is {@code null}
+     * @throws IllegalStateException
+     *         If the invite is not from a guild
+     *
+     * @return A {@link RestAction} returning nothing
+     */
+    @Nonnull
+    @CheckReturnValue
+    RestAction<Void> addTargetUsers(@Nonnull List<? extends UserSnowflake> users);
+
+    /**
+     * Removes up to 1000 users (per request) from the list of users authorized to use the provided invite code.
+     * <br>If all users are removed, the invite will become usable by anyone!
+     *
+     * <p>This endpoint requires the bot to be the inviter,
+     * or to have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     *
+     * <p>Possible {@link net.dv8tion.jda.api.requests.ErrorResponse ErrorResponses} include:
+     * <ul>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#UNKNOWN_INVITE Unknown Invite}
+     *     <br>The Invite did not exist (possibly deleted), or is a group DM invite, or the account is banned in the guild.</li>
+     *     <li>{@link net.dv8tion.jda.api.requests.ErrorResponse#MISSING_PERMISSIONS Missing Permissions}
+     *     <br>If the bot is not the inviter and does not have the {@link net.dv8tion.jda.api.Permission#MANAGE_SERVER MANAGE_SERVER} permission in the target guild.
+     *     </li>
+     * </ul>
+     *
+     * @param  users
+     *         The users to deny (again), up to 1000
+     *
+     * @throws IllegalArgumentException
+     *         If the provided list or any of its users is {@code null}
+     * @throws IllegalStateException
+     *         If the invite is not from a guild
+     *
+     * @return A {@link RestAction} returning nothing
+     */
+    @Nonnull
+    @CheckReturnValue
+    RestAction<Void> removeTargetUsers(@Nonnull List<? extends UserSnowflake> users);
 
     /**
      * The type of this invite.
