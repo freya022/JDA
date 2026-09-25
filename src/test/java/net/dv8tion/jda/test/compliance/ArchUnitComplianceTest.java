@@ -32,6 +32,9 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.lang.classfile.*;
 import java.lang.classfile.attribute.RuntimeInvisibleTypeAnnotationsAttribute;
+import java.lang.constant.ClassDesc;
+import java.lang.reflect.AccessFlag;
+import java.lang.reflect.Modifier;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -373,6 +376,68 @@ public class ArchUnitComplianceTest {
         }
     }
 
+    private static class MissingTypeAnnotationPrinter {
+        private final List<List<Integer>> chains;
+
+        private final Deque<Integer> currentChain = new ArrayDeque<>();
+        private final StringBuilder builder = new StringBuilder();
+
+        private MissingTypeAnnotationPrinter(List<List<Integer>> chains) {
+            this.chains = chains;
+        }
+
+        static String print(Signature signature, List<List<Integer>> chains) {
+            var printer = new MissingTypeAnnotationPrinter(chains);
+            printer.print(signature);
+            return printer.builder.toString();
+        }
+
+        private void print(Signature signature) {
+            switch (signature) {
+                case Signature.ClassTypeSig classTypeSig -> {
+                    // Ignore root annotations as we want it displayed above the method declaration,
+                    // not on the return type
+                    if (!currentChain.isEmpty() && chains.contains(new ArrayList<>(currentChain))) {
+                        builder.append(boldUnderline("[HERE]")).append(' ');
+                    }
+                    builder.append(classTypeSig.classDesc().displayName());
+
+                    // Recursion on type arguments (e.g. a list's element type)
+                    List<Signature.TypeArg> typeArgs = classTypeSig.typeArgs();
+                    if (!typeArgs.isEmpty()) {
+                        builder.append("<");
+                    }
+                    for (int i = 0, typeArgsSize = typeArgs.size(); i < typeArgsSize; i++) {
+                        var typeArg = typeArgs.get(i);
+                        if (!(typeArg instanceof Signature.TypeArg.Bounded boundedTypeArg)) {
+                            continue;
+                        }
+
+                        try {
+                            currentChain.add(i);
+                            print(boundedTypeArg.boundType());
+                            if (i + 1 != typeArgsSize) {
+                                builder.append(", ");
+                            }
+                        } finally {
+                            currentChain.removeLast();
+                        }
+                    }
+                    if (!typeArgs.isEmpty()) {
+                        builder.append(">");
+                    }
+                }
+                case Signature.ArrayTypeSig arrayTypeSig -> {
+                    print(arrayTypeSig.componentSignature());
+                    builder.append("[]");
+                }
+                case Signature.BaseTypeSig baseTypeSig -> builder.append(baseTypeSig.signatureString());
+                case Signature.TypeVarSig typeVarSig -> builder.append(typeVarSig.identifier());
+                default -> throw new UnsupportedOperationException("Unsupported signature: " + signature);
+            }
+        }
+    }
+
     private static ArchCondition<JavaMethod> haveUnmodifiableOrKotlinMutableAnnotation() {
         return new ArchCondition<>("have @Unmodifiable(View) or Kotlin's @Mutable annotation") {
 
@@ -398,13 +463,24 @@ public class ArchUnitComplianceTest {
                 if (!typeArgumentChains.isEmpty()) {
                     events.add(SimpleConditionEvent.violated(
                             method,
-                            "Method is missing one or more @Unmodifiable(View) / @Mutable => %s %s.%s(%s) (%s:%s)"
+                            "Method is missing one or more @Unmodifiable(View) / @Mutable => %s%s %s %s.%s(%s) (%s:%s)"
                                     .formatted(
-                                            method.getRawReturnType().getSimpleName(),
+                                            typeArgumentChains.contains(Collections.emptyList())
+                                                    ? boldUnderline("[HERE]") + ' '
+                                                    : "",
+                                            methodModel.flags().flags().stream()
+                                                    .filter(AccessFlag::sourceModifier)
+                                                    .map(a -> Modifier.toString(a.mask()))
+                                                    .collect(Collectors.joining(" ")),
+                                            MissingTypeAnnotationPrinter.print(
+                                                    signature
+                                                            .asMethodSignature()
+                                                            .result(),
+                                                    typeArgumentChains),
                                             method.getOwner().getSimpleName(),
                                             method.getName(),
-                                            method.getParameterTypes().stream()
-                                                    .map(Object::toString)
+                                            methodModel.methodTypeSymbol().parameterList().stream()
+                                                    .map(ClassDesc::displayName)
                                                     .collect(Collectors.joining(", ")),
                                             method.getSourceCodeLocation().getSourceFileName(),
                                             method.getSourceCodeLocation().getLineNumber())));
@@ -445,5 +521,10 @@ public class ArchUnitComplianceTest {
         return element.findAttribute(Attributes.runtimeInvisibleTypeAnnotations())
                 .map(RuntimeInvisibleTypeAnnotationsAttribute::annotations)
                 .orElse(Collections.emptyList());
+    }
+
+    @Nonnull
+    private static String boldUnderline(String str) {
+        return "\033[31;1;4m" + str + "\033[0m";
     }
 }
