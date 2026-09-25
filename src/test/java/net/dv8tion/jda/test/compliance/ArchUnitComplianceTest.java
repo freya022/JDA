@@ -177,7 +177,7 @@ public class ArchUnitComplianceTest {
     }
 
     @Test
-    void testCollectionsInGenericsHaveMutabilityAnnotation() {
+    void testSupertypesHaveMutabilityAnnotation() {
         classes().should(haveMutabilityAnnotations()).check(SourceSets.getApiClasses());
     }
 
